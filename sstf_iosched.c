@@ -8,23 +8,23 @@
 *****************************************************/
 #include <stdio.h>
 #include <stdlib.h>
-#include <linux/elevator.h>
+#include <linux/include/linux/elevator.h>
 
-void __merge_two(int arr[], int left[], int len_left, 
+void __merge_two(int arr[], int left[], int len_left,
                 int right[], int len_right, int disk_head,
                 int direction){
     int i, j = 0, idle = 0;
-    
-    
+
+
 
     //Going in the Right Direction
     if(direction == 1){
-        //have right direction jobs fill first        
+        //have right direction jobs fill first
         for(i = 0; i < len_right; i++){
             arr[j] = right[i];
             j++;
         }
-        //followed by left direction jobs        
+        //followed by left direction jobs
         for(i = len_left - 1; i >= 0; i--){
             arr[j] = left[i];
             j++;
@@ -54,7 +54,7 @@ void find_direction(int len_right, int left_count, int* direction){
     else if(len_right == 0 && (*direction) == 1){
         (*direction) = 0;
     }
-    //if moving left and there are no more tasks in direction    
+    //if moving left and there are no more tasks in direction
     else if(left_count == 0 && (*direction) == 0){
         (*direction) = 1;
     }
@@ -69,7 +69,7 @@ void merge_queue(int arr[], int length, int disk_head, int direction){
 		}
     }
     int len_right = (length - left_count);
-    int left[left_count], right[len_right];    
+    int left[left_count], right[len_right];
 
     for(arr_count = 0; arr_count < left_count; arr_count++){
         left[arr_count] = arr[arr_count];
@@ -80,7 +80,7 @@ void merge_queue(int arr[], int length, int disk_head, int direction){
     }
     find_direction(len_right, left_count, &direction);
     __merge_two(arr, left, left_count, right, len_right, disk_head, direction);
-  
+
 
     printf("\n Left: ");
     for(i = 0; i < left_count; i++){
@@ -90,7 +90,7 @@ void merge_queue(int arr[], int length, int disk_head, int direction){
     for(i = 0; i < len_right; i++){
         printf("%d ", right[i]);
     }
-    
+
     printf("\n Merged Queue: ");
      for(i = 0; i < length; i++){
         printf("%d ", arr[i]);
@@ -117,19 +117,15 @@ int main(int argc, char *argv[]){
     // int arr[] = {2,1,3,45,234,61,23,5,3};
     int arr[] = {1,4,5,9,12,13};
     int i, length = sizeof(arr) / sizeof(int);
-    
-    
+
+
     insertion_sort(arr, length);
-    printf("\n Whole: ");    
+    printf("\n Whole: ");
     for(i = 0; i < length; i++){
         printf("%d ", arr[i]);
     }
-     
+
     merge_queue(arr, length, 6, 1);
     printf("\n");
     return 0;
 }
-
-
-
-
