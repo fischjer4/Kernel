@@ -5,8 +5,11 @@ DVIPDF 	= dvipdft
 XDVI	= xdvi -gamma 4
 GH 		= gv
 
+#Used to specify the correct build path for tex on os2 server
+BUILDDIR = /usr/local/apps/tex_live/current/bin/x86_64-linux
+
 EXAMPLES	= $(wildcard *.c)
-SRC	  := $(shell egrep -l '^[^%]*\\begin\{document\}' *.tex)
+SRC	  	:= $(shell egrep -l '^[^%]*\\begin\{document\}' *.tex)
 TRG 		= $(SRC:%.tex=%.dvi)
 PSF 		= $(SRC:%.tex=%.ps)
 PDF 		= $(SRC:%.tex=%.pdf)
@@ -25,15 +28,15 @@ $(TRG): %.dvi: %.tex $(EXAMPLES)
 	#use pygments to include source code
 	#pygmentize -f latex -o __${EXAMPLES}.tex ${EXAMPLES}
 
-	$(LATEX) $<
-	$(BIBTEX) $(<:%.tex=%)
-	$(LATEX) $<
-	$(LATEX) $<
+	$(BUILDDIR)/$(LATEX) $<
+	$(BUILDDIR)/$(BIBTEX) $(<:%.tex=%)
+	$(BUILDDIR)/$(LATEX) $<
+	$(BUILDDIR)/$(LATEX) $<
 	#rm __${SRC}.tex
 	#remove pygmentized output to avoid cluttering up directory
 
 $(PSF):%.ps: %.dvi
-	$(DVIPS) -R -Poutline -t letter $< -o $@
+	$(BUILDDIR)/$(DVIPS) -R -Poutline -t letter $< -o $@
 
 $(PDF): %.pdf: %.ps
 	ps2pdf $<
