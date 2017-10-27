@@ -12,23 +12,29 @@
 void __merge_two(int arr[], int left[], int len_left, int right[], int len_right, int disk_head){
     int i, j = 0;
 
-    if(abs(left[len_left - 1] - disk_head) <= abs(right[len_right - 1] - disk_head)){
+    //if the left direction is closer to the disk_head than right
+    if(abs(left[len_left - 1] - disk_head) <= abs(right[0] - disk_head)){
+        //have left direction jobs fill first
         for(i = len_left - 1; i >= 0; i--){
             arr[j] = left[i];
             j++;
         }
+        //followed by right direction jobs
         for(i = 0; i < len_right; i++){
             arr[j] = right[i];
             j++;
         }
     }
+    //right direction is closer
     else{
-        for(i = len_left - 1; i >= 0; i--){
-            arr[j] = left[i];
-            j++;
-        }
+        //have right direction jobs fill first        
         for(i = 0; i < len_right; i++){
             arr[j] = right[i];
+            j++;
+        }
+        //followed by left direction jobs        
+        for(i = len_left - 1; i >= 0; i--){
+            arr[j] = left[i];
             j++;
         }
     }
@@ -88,7 +94,7 @@ void insertion_sort(int arr[], int n){
 
 int main(int argc, char *argv[]){
     // int arr[] = {2,1,3,45,234,61,23,5,3};
-    int arr[] = {2,1,3,45,234,61,23,5,3};
+    int arr[] = {1,4,5,9,12,13};
     int i, length = sizeof(arr) / sizeof(int);
     
     
@@ -98,7 +104,7 @@ int main(int argc, char *argv[]){
         printf("%d ", arr[i]);
     }
 
-    merge_queue(arr, length, 4);
+    merge_queue(arr, length, 6);
     printf("\n");
     return 0;
 }
