@@ -9,24 +9,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void __merge_two(int arr[], int left[], int len_left, int right[], int len_right, int disk_head){
-    int i, j = 0;
+void __merge_two(int arr[], int left[], int len_left, 
+                int right[], int len_right, int disk_head,
+                int direction){
+    int i, j = 0, idle = 0;
+    
+    
 
-    //if the left direction is closer to the disk_head than right
-    if(abs(left[len_left - 1] - disk_head) <= abs(right[0] - disk_head)){
-        //have left direction jobs fill first
-        for(i = len_left - 1; i >= 0; i--){
-            arr[j] = left[i];
-            j++;
-        }
-        //followed by right direction jobs
-        for(i = 0; i < len_right; i++){
-            arr[j] = right[i];
-            j++;
-        }
-    }
-    //right direction is closer
-    else{
+    //Going in the Right Direction
+    if(direction == 1){
         //have right direction jobs fill first        
         for(i = 0; i < len_right; i++){
             arr[j] = right[i];
@@ -38,35 +29,64 @@ void __merge_two(int arr[], int left[], int len_left, int right[], int len_right
             j++;
         }
     }
+    //Going in the Left Direction
+    else if(direction == 0){
+        //have left direction jobs fill first
+        for(i = len_left - 1; i >= 0; i--){
+            arr[j] = left[i];
+            j++;
+        }
+        //followed by right direction jobs
+        for(i = 0; i < len_right; i++){
+            arr[j] = right[i];
+            j++;
+        }
+    }
+    //Idle doesn't run
+}
+void find_direction(int len_right, int left_count, int* direction){
+    // if there is nothing to run, idle
+    if(left_count == 0 && len_right == 0){
+        (*direction) = -1;
+    }
+    //if moving right and there are no more tasks in direction
+    else if(len_right == 0 && (*direction) == 1){
+        (*direction) = 0;
+    }
+    //if moving left and there are no more tasks in direction    
+    else if(left_count == 0 && (*direction) == 0){
+        (*direction) = 1;
+    }
 }
 
-void merge_queue(int arr[], int length, int disk_head){
-    int count, arr_count, right_count, i;
+void merge_queue(int arr[], int length, int disk_head, int direction){
+    int left_count, arr_count, right_count, i;
     //count everything to the left of the disk_head
-    for(count = 0; count < length; count++){
-		if(arr[count] > disk_head){
+    for(left_count = 0; left_count < length; left_count++){
+		if(arr[left_count] > disk_head){
 			break;
 		}
     }
-    int right_len = (length - count);
-    int left[count], right[right_len];    
+    int len_right = (length - left_count);
+    int left[left_count], right[len_right];    
 
-    for(arr_count = 0; arr_count < count; arr_count++){
+    for(arr_count = 0; arr_count < left_count; arr_count++){
         left[arr_count] = arr[arr_count];
 	}
-	for(right_count = 0; right_count < (right_len); right_count++){
+	for(right_count = 0; right_count < (len_right); right_count++){
         right[right_count] = arr[arr_count];
         arr_count++;
     }
-    __merge_two(arr, left, count, right, (right_len), disk_head);
+    find_direction(len_right, left_count, &direction);
+    __merge_two(arr, left, left_count, right, len_right, disk_head, direction);
   
 
     printf("\n Left: ");
-    for(i = 0; i < count; i++){
+    for(i = 0; i < left_count; i++){
         printf("%d ", left[i]);
     }
     printf("\n Right: ");
-    for(i = 0; i < right_len; i++){
+    for(i = 0; i < len_right; i++){
         printf("%d ", right[i]);
     }
     
@@ -98,13 +118,17 @@ int main(int argc, char *argv[]){
     int i, length = sizeof(arr) / sizeof(int);
     
     
-    insertion_sort(arr, 9);
+    insertion_sort(arr, length);
     printf("\n Whole: ");    
     for(i = 0; i < length; i++){
         printf("%d ", arr[i]);
     }
-
-    merge_queue(arr, length, 6);
+     
+    merge_queue(arr, length, 6, 1);
     printf("\n");
     return 0;
 }
+
+
+
+
