@@ -1,6 +1,8 @@
 /*
 	 * Below is the LOOK IO elevator scheduler
 	 * The structure was taken from linux-yocto-3.19/block/noop-iosched.c
+	 * This website is VERY helpful in understanding the API calls in this
+		 code: http://www.cse.unsw.edu.au/~aaronc/iosched/doc/api/index.html
  */
 #include <linux/blkdev.h>
 #include <linux/elevator.h>
@@ -18,88 +20,113 @@
 	* typedef u64 sector_t;
 */
 struct look_data {
-	struct list_head queue;
+	struct list_head queue; //head pointer to circularly linked list
 	int direction;
 	sector_t disk_head;
 };
-
-static void look_merged_requests(struct request_queue *q, struct request *rq,
+/*
+	* Called when two requests have been turned into a single request. 
+		This occurs when a request grows (as a result of a bio merge) 
+		to become adjacent with an existing request.
+*/
+static void look_merged_requests(struct request_queue *req_q, struct request *rq,
 				 struct request *next)
 {
 	list_del_init(&next->queuelist);
 }
-
-static int look_dispatch(struct request_queue *q, int force)
+/*
+	* Requests the scheduler to populate the dispatch queue 
+		with requests. Once requests have been dispatched, 
+		the scheduler may not manipulate them. 
+	* Returns the number of requests dispatched.
+*/
+static int look_dispatch(struct request_queue *req_q, int force)
 {
-	struct look_data *nd = q->elevator->elevator_data;
+	struct look_data *look = req_q->elevator->elevator_data;
 
-	if (!list_empty(&nd->queue)) {
+	if (!list_empty(&look->queue)) {
 		struct request *rq;
-		rq = list_entry(nd->queue.next, struct request, queuelist);
+		rq = list_entry(look->queue.next, struct request, queuelist);
 		list_del_init(&rq->queuelist);
-		elv_dispatch_sort(q, rq);
+		elv_dispatch_sort(req_q, rq);
 		return 1;
 	}
 	return 0;
 }
-
-static void look_add_request(struct request_queue *q, struct request *rq)
+/*
+	* Queues a new request with the scheduler.
+*/
+static void look_add_request(struct request_queue *req_q, struct request *rq)
 {
-	struct look_data *nd = q->elevator->elevator_data;
+	struct look_data *look = req_q->elevator->elevator_data;
 
-	list_add_tail(&rq->queuelist, &nd->queue);
+	list_add_tail(&rq->queuelist, &look->queue);
 }
-
+/*
+	* Returns the request BEFORE the current req in start-sector order. 
+		Used to discover opportunities to place two adjacent 
+		requests next to eachother (i.e. drop two 
+		people off at same floor).
+*/
 static struct request *
-look_former_request(struct request_queue *q, struct request *rq)
+look_former_request(struct request_queue *req_q, struct request *rq)
 {
-	struct look_data *nd = q->elevator->elevator_data;
+	struct look_data *look = req_q->elevator->elevator_data;
 
-	if (rq->queuelist.prev == &nd->queue)
+	if (rq->queuelist.prev == &look->queue)
 		return NULL;
 	return list_entry(rq->queuelist.prev, struct request, queuelist);
 }
-
+/*
+	* Returns the request AFTER the current req in start-sector order. 
+		Used to discover opportunities to place two adjacent 
+		requests next to eachother (i.e. drop two 
+		people off at same floor).
+*/
 static struct request *
-look_latter_request(struct request_queue *q, struct request *rq)
+look_latter_request(struct request_queue *req_q, struct request *rq)
 {
-	struct look_data *nd = q->elevator->elevator_data;
+	struct look_data *look = req_q->elevator->elevator_data;
 
-	if (rq->queuelist.next == &nd->queue)
+	if (rq->queuelist.next == &look->queue)
 		return NULL;
 	return list_entry(rq->queuelist.next, struct request, queuelist);
 }
-
-static int look_init_queue(struct request_queue *q, struct elevator_type *e)
+/*
+	* Initialize a scheduler instance
+*/
+static int look_init_queue(struct request_queue *req_q, struct elevator_type *e)
 {
-	struct look_data *nd;
-	struct elevator_queue *eq;
+	struct look_data *look;
+	struct elevator_queue *elev_q;
 
-	eq = elevator_alloc(q, e);
-	if (!eq)
+	elev_q = elevator_alloc(req_q, e);
+	if (!elev_q)
 		return -ENOMEM;
 
-	nd = kmalloc_node(sizeof(*nd), GFP_KERNEL, q->node);
-	if (!nd) {
-		kobject_put(&eq->kobj);
+	look = kmalloc_node(sizeof(*look), GFP_KERNEL, req_q->node);
+	if (!look) {
+		kobject_put(&elev_q->kobj);
 		return -ENOMEM;
 	}
-	eq->elevator_data = nd;
+	elev_q->elevator_data = look;
 
-	INIT_LIST_HEAD(&nd->queue);
+	INIT_LIST_HEAD(&look->queue);
 
-	spin_lock_irq(q->queue_lock);
-	q->elevator = eq;
-	spin_unlock_irq(q->queue_lock);
+	spin_lock_irq(req_q->queue_lock);
+	req_q->elevator = elev_q;
+	spin_unlock_irq(req_q->queue_lock);
 	return 0;
 }
-
+/*
+	* Clean up scheduler instance
+*/
 static void look_exit_queue(struct elevator_queue *e)
 {
-	struct look_data *nd = e->elevator_data;
+	struct look_data *look = e->elevator_data;
 
-	BUG_ON(!list_empty(&nd->queue));
-	kfree(nd);
+	BUG_ON(!list_empty(&look->queue));
+	kfree(look);
 }
 /*
 	* Have the built in elevator functions point to our
@@ -112,7 +139,7 @@ static struct elevator_type elevator_look = {
         .elevator_merge_req_fn = look_merged_requests,
         .elevator_dispatch_fn = look_dispatch,
         .elevator_add_req_fn = look_add_request,
-        .elevator_former_req_fn = look_former_request,
+		.elevator_former_req_fn = look_former_request,
         .elevator_latter_req_fn = look_latter_request,
         .elevator_init_fn = look_init_queue,
         .elevator_exit_fn = look_exit_queue,
