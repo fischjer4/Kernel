@@ -8,7 +8,6 @@
 *****************************************************/
 #include <stdio.h>
 #include <stdlib.h>
-#include <linux/include/linux/elevator.h>
 
 void __merge_two(int arr[], int left[], int len_left,
                 int right[], int len_right, int disk_head,

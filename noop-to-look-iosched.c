@@ -30,7 +30,7 @@ struct look_data {
 		This occurs when a request grows (as a result of a bio merge) 
 		to become adjacent with an existing request.
 */
-static void look_merged_requests(struct request_queue *req_q, struct request *rq,
+static void look_merged_requests(struct request_queue *req_q, struct request *cur_req,
 				 struct request *next)
 {
 	list_del_init(&next->queuelist);
@@ -44,14 +44,50 @@ static void look_merged_requests(struct request_queue *req_q, struct request *rq
 static int look_dispatch(struct request_queue *req_q, int force)
 {
 	struct look_data *look = req_q->elevator->elevator_data;
+	struct request *next_req, *prev_req, *cur_req;
+	if (!list_empty(&look->queue)){
+		next_req = list_entry(look->queue.next, struct request, queuelist);
+		prev_req = list_entry(look->queue.prev, struct request, queuelist);	
 
-	if (!list_empty(&look->queue)) {
-		struct request *rq;
-		rq = list_entry(look->queue.next, struct request, queuelist);
-		list_del_init(&rq->queuelist);
-		elv_dispatch_sort(req_q, rq);
-		return 1;
+		/*If we're moving forward*/
+		if(look->direction == 1){
+			/*If there is another req in this direction take it*/
+			if(blk_rq_pos(next_req) >= look->disk_head){
+				cur_req = next_req;
+			}
+			/*Change direction if there's no more reqs in fwrd direction
+			  	Note how this traverses the list backwards instead of simply
+				following the circularl list to the front again. This is what
+				differentiates this LOOK scheduler from the C-LOOK
+			*/			
+			else{
+				look->direction = 0;
+				cur_req = prev_req; //turn around
+			}
+		}
+
+
+		/*Else we're moving backward*/
+		else{
+			/*If there is another req in this direction take it*/			
+			if(blk_rq_pos(prev_req) < look->disk_head){
+				cur_req = prev_req;
+			}
+			/*Change direction if there's no more reqs in back direction*/
+			else{
+				look->direction = 1;
+				cur_req = next_req; //turn around
+			}
+		}
+		/*Assert that cur_req is valid*/
+		if(cur_req){	
+			look->disk_head = blk_rq_pos(cur_req) + blk_rq_sectors(cur_req);
+			list_del_init(&cur_req->queuelist);
+			elv_dispatch_add_tail(req_q, cur_req);
+			return 1;
+		}
 	}
+	/*No requests*/
 	return 0;
 }
 /*
@@ -74,7 +110,7 @@ static void look_add_request(struct request_queue *req_q, struct request *cur_re
 		next_req = list_entry(look->queue.next, struct request, queuelist);
 		prev_req = list_entry(look->queue.prev, struct request, queuelist);
 		/*traverse the queue looking for where to place the cur_req	*/
-		while(blk_rq_pos(cur_req) > blk_rq_pos(next)){
+		while(blk_rq_pos(cur_req) >= blk_rq_pos(next)){
 			/*list_entry() gets the struct for the given entry*/
 			next_req = list_entry(next_req->queuelist.next, struct request, queuelist);
 			prev_req = list_entry(prev_req->queuelist.prev, struct request, queuelist);
@@ -93,13 +129,13 @@ static void look_add_request(struct request_queue *req_q, struct request *cur_re
 		people off at same floor).
 */
 static struct request *
-look_former_request(struct request_queue *req_q, struct request *rq)
+look_former_request(struct request_queue *req_q, struct request *cur_req)
 {
 	struct look_data *look = req_q->elevator->elevator_data;
 
-	if (rq->queuelist.prev == &look->queue)
+	if (cur_req->queuelist.prev == &look->queue)
 		return NULL;
-	return list_entry(rq->queuelist.prev, struct request, queuelist);
+	return list_entry(cur_req->queuelist.prev, struct request, queuelist);
 }
 /*
 	* Returns the request AFTER the current req in start-sector order. 
@@ -108,13 +144,13 @@ look_former_request(struct request_queue *req_q, struct request *rq)
 		people off at same floor).
 */
 static struct request *
-look_latter_request(struct request_queue *req_q, struct request *rq)
+look_latter_request(struct request_queue *req_q, struct request *cur_req)
 {
 	struct look_data *look = req_q->elevator->elevator_data;
 
-	if (rq->queuelist.next == &look->queue)
+	if (cur_req->queuelist.next == &look->queue)
 		return NULL;
-	return list_entry(rq->queuelist.next, struct request, queuelist);
+	return list_entry(cur_req->queuelist.next, struct request, queuelist);
 }
 /*
 	* Initialize a scheduler instance
