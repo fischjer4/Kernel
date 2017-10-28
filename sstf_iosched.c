@@ -81,19 +81,19 @@ void merge_queue(int arr[], int length, int disk_head, int direction){
     __merge_two(arr, left, left_count, right, len_right, disk_head, direction);
   
 
-    printf("\n Left: ");
-    for(i = 0; i < left_count; i++){
-        printf("%d ", left[i]);
-    }
-    printf("\n Right: ");
-    for(i = 0; i < len_right; i++){
-        printf("%d ", right[i]);
-    }
+    // printf("\n Left: ");
+    // for(i = 0; i < left_count; i++){
+    //     printf("%d ", left[i]);
+    // }
+    // printf("\n Right: ");
+    // for(i = 0; i < len_right; i++){
+    //     printf("%d ", right[i]);
+    // }
     
-    printf("\n Merged Queue: ");
-     for(i = 0; i < length; i++){
-        printf("%d ", arr[i]);
-    }
+    // printf("\n Merged Queue: ");
+    //  for(i = 0; i < length; i++){
+    //     printf("%d ", arr[i]);
+    // }
 }
 
 void insertion_sort(int arr[], int n){
