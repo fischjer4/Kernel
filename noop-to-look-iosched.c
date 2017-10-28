@@ -65,22 +65,25 @@ static int look_dispatch(struct request_queue *req_q, int force)
 static void look_add_request(struct request_queue *req_q, struct request *cur_req)
 {
 	struct look_data *look = req_q->elevator->elevator_data;
+	/*init head_ptr to beginning of queue in case its empty*/
 	struct request *next_req, 
 				   *prev_req, 
-					*head_ptr = look;	
+				   *head_ptr = look;
 
 	if(!list_empty(&look->queue)){
-		//traverse the queue looking for where to place the cur_req
+		next_req = list_entry(look->queue.next, struct request, queuelist);
+		prev_req = list_entry(look->queue.prev, struct request, queuelist);
+		/*traverse the queue looking for where to place the cur_req	*/
 		while(blk_rq_pos(cur_req) > blk_rq_pos(next)){
-			// list_entry() gets the struct for the given entry
+			/*list_entry() gets the struct for the given entry*/
 			next_req = list_entry(next_req->queuelist.next, struct request, queuelist);
 			prev_req = list_entry(prev_req->queuelist.prev, struct request, queuelist);
 		}
-		//insert the cur_req ahead of the prev_req and behind the next_req
+		/*insert the cur_req ahead of the prev_req and behind the next_req*/
 		head_ptr = prev_que;
 	}
 	if(head_ptr){
-		list_add( &cur_req->queuelist, &head_ptr->queuelist );
+		list_add(&cur_req->queuelist, &head_ptr->queuelist);
 	}
 }
 /*
