@@ -1,6 +1,7 @@
 /*
 	 * Below is the LOOK IO elevator scheduler
-	 * The structure was taken from linux-yocto-3.19/block/noop-iosched.c
+	 * The structure is based off the NOOP scheduluer in 
+	 * 	linux-yocto-3.19/block/noop-iosched.c
 	 * This website is VERY helpful in understanding the API calls in this
 		 code: http://www.cse.unsw.edu.au/~aaronc/iosched/doc/api/index.html
  */
@@ -55,12 +56,32 @@ static int look_dispatch(struct request_queue *req_q, int force)
 }
 /*
 	* Queues a new request with the scheduler.
+	* 1) Check if the run queue is empty
+			Yes --> add the cur_req
+	* 2) If its not
+			Loop until cur_req's correct position is found
+			Insert cur_req there		
 */
-static void look_add_request(struct request_queue *req_q, struct request *rq)
+static void look_add_request(struct request_queue *req_q, struct request *cur_req)
 {
 	struct look_data *look = req_q->elevator->elevator_data;
+	struct request *next_req, 
+				   *prev_req, 
+					*head_ptr = look;	
 
-	list_add_tail(&rq->queuelist, &look->queue);
+	if(!list_empty(&look->queue)){
+		//traverse the queue looking for where to place the cur_req
+		while(blk_rq_pos(cur_req) > blk_rq_pos(next)){
+			// list_entry() gets the struct for the given entry
+			next_req = list_entry(next_req->queuelist.next, struct request, queuelist);
+			prev_req = list_entry(prev_req->queuelist.prev, struct request, queuelist);
+		}
+		//insert the cur_req ahead of the prev_req and behind the next_req
+		head_ptr = prev_que;
+	}
+	if(head_ptr){
+		list_add( &cur_req->queuelist, &head_ptr->queuelist );
+	}
 }
 /*
 	* Returns the request BEFORE the current req in start-sector order. 
