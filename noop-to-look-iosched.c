@@ -48,7 +48,12 @@ static int look_dispatch(struct request_queue *req_q, int force)
 	if (!list_empty(&look->queue)){
 		next_req = list_entry(look->queue.next, struct request, queuelist);
 		prev_req = list_entry(look->queue.prev, struct request, queuelist);	
+		cur_req = next_req; //in case there's only one req in queue
 
+		/*If this is the first move for the disk_head, make it frwd*/
+		if(look->direction != 1 && == look->direction0){
+			look->direction = 1;
+		}
 		/*If we're moving forward*/
 		if(look->direction == 1){
 			/*If there is another req in this direction take it*/
@@ -65,8 +70,6 @@ static int look_dispatch(struct request_queue *req_q, int force)
 				cur_req = prev_req; //turn around
 			}
 		}
-
-
 		/*Else we're moving backward*/
 		else{
 			/*If there is another req in this direction take it*/			
@@ -81,9 +84,9 @@ static int look_dispatch(struct request_queue *req_q, int force)
 		}
 		/*Assert that cur_req is valid*/
 		if(cur_req){	
-			look->disk_head = blk_rq_pos(cur_req) + blk_rq_sectors(cur_req);
-			list_del_init(&cur_req->queuelist);
-			elv_dispatch_add_tail(req_q, cur_req);
+			look->disk_head = blk_rq_pos(cur_req) + blk_rq_sectors(cur_req); //move head
+			list_del_init(&cur_req->queuelist); //remove the cur_req from scheduler
+			elv_dispatch_add_tail(req_q, cur_req); //add cur_req to the block's queue
 			return 1;
 		}
 	}
