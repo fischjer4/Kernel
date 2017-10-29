@@ -4,6 +4,8 @@
 	 * 	linux-yocto-3.19/block/noop-iosched.c
 	 * This website is VERY helpful in understanding the API calls in this
 		 code: http://www.cse.unsw.edu.au/~aaronc/iosched/doc/api/index.html
+	* This old assignment is also a very helpful resource:
+		http://classes.engr.oregonstate.edu/eecs/fall2011/cs411/proj03.pdf
  */
 #include <linux/blkdev.h>
 #include <linux/elevator.h>
@@ -50,10 +52,6 @@ static int look_dispatch(struct request_queue *req_q, int force)
 		prev_req = list_entry(look->queue.prev, struct request, queuelist);	
 		cur_req = next_req; //in case there's only one req in queue
 
-		/*If this is the first move for the disk_head, make it frwd*/
-		if(look->direction != 1 && == look->direction0){
-			look->direction = 1;
-		}
 		/*If we're moving forward*/
 		if(look->direction == 1){
 			/*If there is another req in this direction take it*/
@@ -62,8 +60,8 @@ static int look_dispatch(struct request_queue *req_q, int force)
 			}
 			/*Change direction if there's no more reqs in fwrd direction
 			  	Note how this traverses the list backwards instead of simply
-				following the circularl list to the front again. This is what
-				differentiates this LOOK scheduler from the C-LOOK
+				following the circular list to the front again. This is what
+				differentiates this LOOK scheduler from a C-LOOK
 			*/			
 			else{
 				look->direction = 0;
@@ -84,7 +82,7 @@ static int look_dispatch(struct request_queue *req_q, int force)
 		}
 		/*Assert that cur_req is valid*/
 		if(cur_req){	
-			look->disk_head = blk_rq_pos(cur_req) + blk_rq_sectors(cur_req); //move head
+			look->disk_head = blk_rq_pos(cur_req) + blk_rq_sectors(cur_req); //keep track of head
 			list_del_init(&cur_req->queuelist); //remove the cur_req from scheduler
 			elv_dispatch_add_tail(req_q, cur_req); //add cur_req to the block's queue
 			return 1;
@@ -95,11 +93,12 @@ static int look_dispatch(struct request_queue *req_q, int force)
 }
 /*
 	* Queues a new request with the scheduler.
+	* This is like an insertion sort on the fly
 	* 1) Check if the run queue is empty
-			Yes --> add the cur_req
+			Yes --> add the cur_req directly
 	* 2) If its not
 			Loop until cur_req's correct position is found
-			Insert cur_req there		
+			Insert cur_req there	
 */
 static void look_add_request(struct request_queue *req_q, struct request *cur_req)
 {
