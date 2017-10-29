@@ -6,6 +6,8 @@
 		 code: http://www.cse.unsw.edu.au/~aaronc/iosched/doc/api/index.html
 	* This old assignment is also a very helpful resource:
 		http://classes.engr.oregonstate.edu/eecs/fall2011/cs411/proj03.pdf
+	* Helpful for changing scheduler from command line:
+		https://www.techrepublic.com/article/how-to-change-the-linux-io-scheduler-to-fit-your-needs/
  */
 #include <linux/blkdev.h>
 #include <linux/elevator.h>
@@ -110,30 +112,28 @@ static void look_add_request(struct request_queue *req_q, struct request *cur_re
 {
 	int i = 0; /*solely used for printk() statement*/
 	struct look_data *look = req_q->elevator->elevator_data;
-	/*init head_ptr to beginning of queue in case its empty*/
-	struct request *next_req, 
-				   *prev_req, 
-				   *head_ptr = look;
+	struct request *next_req, *prev_req;
 
-	if(!list_empty(&look->queue)){
+	if(list_empty(&look->queue)){
+		printk("request_queue is empty, adding cur_req directly \n");
+		list_add(&cur_req->queuelist, &look->queue);		
+	}
+	else{
 		next_req = list_entry(look->queue.next, struct request, queuelist);
 		prev_req = list_entry(look->queue.prev, struct request, queuelist);
 		/*traverse the queue looking for where to place the cur_req	*/
 		printk("cur_req location: %llu \n", (unsigned long long)blk_rq_pos(cur_req));
 		printk("request_que up until cur_req: ");
-		while(blk_rq_pos(cur_req) >= blk_rq_pos(next)){
+		while(blk_rq_pos(cur_req) >= blk_rq_pos(next_req)){
 			i++;
-			printk("%llu ", (unsigned long long)blk_rq_pos(next));
+			printk("%llu ", (unsigned long long)blk_rq_pos(next_req));
 			/*list_entry() gets the struct for the given entry*/
 			next_req = list_entry(next_req->queuelist.next, struct request, queuelist);
 			prev_req = list_entry(prev_req->queuelist.prev, struct request, queuelist);
 		}
 		printk("\n List is not empty --- moved cur_req to position %d \n", i);
 		/*insert the cur_req ahead of the prev_req and behind the next_req*/
-		head_ptr = prev_que;
-	}
-	if(head_ptr){
-		list_add(&cur_req->queuelist, &head_ptr->queuelist);
+		list_add(&cur_req->queuelist, &prev_req->queuelist);
 	}
 }
 /*
@@ -207,7 +207,7 @@ static void look_exit_queue(struct elevator_queue *e)
 		implemented functions
 */
 static struct elevator_type elevator_look = {
-	.elevator_name = "LOOK ELEVATOR",
+	.elevator_name = "LOOK",
 	.elevator_owner = THIS_MODULE,	
 	.ops = {
         .elevator_merge_req_fn = look_merged_requests,
@@ -236,3 +236,7 @@ static void __exit look_exit(void)
 
 module_init(look_init);
 module_exit(look_exit);
+
+MODULE_AUTHOR("Jeremy Fischer");
+MODULE_LICENSE("GPL");
+MODULE_DESCRIPTION("LOOK IO scheduler");
