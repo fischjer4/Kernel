@@ -3,12 +3,6 @@
 \usepackage[english]{babel}
 \usepackage{amsmath}
 \usepackage{graphicx}
-<<<<<<< HEAD
-\usepackage{tasks}
-=======
-%\usepackage{longtable, hyperref)
-%\newcommand{\longtableendfoot}{Please continue at the next page}
->>>>>>> 2450cbed98e71692f106c44bb1c31e4bda928564
 \usepackage[top=0.75in, bottom=0.75in, left=0.75in, right=0.75in]{geometry}
 
 \title{\textbf{Operating Systems II}\\Fall 2017\\Homework 2}
@@ -20,22 +14,16 @@
 \begin{document}
 	\maketitle
 	\begin{abstract}
-<<<<<<< HEAD
 		The assignment consists of implementing the LOOK I/O scheduler on the virtual machine. We created two new files: noop-to-look-iosched.c and look-iosched.c. \textbf{NOTE: THIS PART IS NOT DONE YET}
-=======
-		The assignment consists of implementing the LOOK I/O scheduler on the virtual machine. We created two new files: noop-to-look-iosched.c and look-iosched.c. The former contains the actual code for the LOOK I/O scheduler
->>>>>>> 2450cbed98e71692f106c44bb1c31e4bda928564
 	\end{abstract}
 	\newpage
-	
+
 	\section{Design}
-	
+
 	\section{Version Control Log}
 		\begin{tabular}{| p{6.8cm} | p{1.3cm} | p{2.5cm} | p{2cm} | p{4.2cm} |}
 			\hline
 			Commit Code Number & Merge & Author & Date & Message \\ \hline
-<<<<<<< HEAD
-=======
 
 			3f240860e80976e8e5b82f5d566d4b2b3f74a90a
 			& -
@@ -73,7 +61,7 @@
 			\hline
 
 			a6992704765a50dedf02ee13defa020aa40f5460
-			& - 
+			& -
 			& Jeremy Fischer
 			& Sat Oct 28 14:20:22 2017
 			& finished add function \\
@@ -99,7 +87,7 @@
 			& Fri Oct 27 17:23:31 2017
 			& added the noop to look skeleton. This C file will be coverted to a LOOK scheduler \\
 			\hline
-			
+
 			c7ffb12c2beac940ce6c6c07707801bbc26651e0
 			& -
 			& Jeremy Fischer
@@ -107,11 +95,11 @@
 			& added the noop to look skeleton. This C file will be coverted to a LOOK scheduler \\
 			\hline
 		\end{tabular}
-		
+
 		\begin{tabular}{| p{6.8cm} | p{1.3cm} | p{2.5cm} | p{2cm} | p{4.2cm} |}
 			\hline
 			Commit Code Number & Merge & Author & Date & Message \\ \hline
-			
+
 			310f75ba9aec87b0ff1bcd1ca1b0b0723952dbe4
 			& -
 			& Omeed Habibelahian
@@ -170,7 +158,7 @@
 
 			b4784fc51ec852bab0e2c26bcd70894d8478cad5
 			& -
-			& Omeed Habibelahian 
+			& Omeed Habibelahian
 			& Wed Oct 11 21:17:07 2017
 			& Added TeX file, .bib file, Makefile, and base C file. \\
 			\hline
@@ -182,264 +170,59 @@
 			& Added IEEEtran.cls file for IEEEtran formatting for the writeup \\
 			\hline
 		\end{tabular}
-	
+
 	\section{Work Log}
 		\begin{tabular}{| p{4cm} | p{3cm} | p{2cm} | p{8cm} |}
 			\hline
 			Feature Completed & By Who & When & Comments \\ \hline
-			
+
 			Added initial files (TeX file, .bib file, Makefile, IEEEtran.cls file, and initial C file) to project directory
 			& Omeed Habibelahian
 			& October 11
-			& I added the TeX file for the writeup, bibliography file, Makefile for the TeX and C files, and an empty C 
+			& I added the TeX file for the writeup, bibliography file, Makefile for the TeX and C files, and an empty C
 			program to our os2\_proj2 directory. I also added the IEEEtran class file for the writeup, but Jeremy would later
 			remove this file becuase it's already installed on the os2 class server.\\
 			\hline
-			
+
 			Corrected Makefile and removed IEEEtran.cls file from project directory
 			& Jeremy Fischer
 			& October 26
 			& Updated the Makefile to target the correct TeX source on the os2 server. Also removed the IEEEtran.cls file
 			from the project directory \\
 			\hline
-			
+
 			Added merge functionality to our LOOK scheduler
 			& Jeremy Fischer
 			& October 26
 			& Specifically added \_\_merge\_two functionality. At this point, jobs in the closest direction are added. \\
 			\hline
-			
+
 			Created skeleton for noop-to-look C file
 			& Jeremy Fischer
 			& October 27
 			& - \\
 			\hline
-			
+
 			Edited Makefile in linux-yocto-3.19/block directory - added code enabling the Makefile to compile our scheduler
 			& Omeed Habibelahian
 			& October 29
 			& - \\
 			\hline
-			
+
 			Edited Kconfig.iosched file in linux-yocto-3.19 to account for the LOOK scheduler.
 			& Jeremy Fischer
 			& October 29
 			& Also added the LOOK scheduler's object file to be compiled in the Makefile in the linux-yocto-3.19/block directory \\
 			\hline
-			
-			
-		\end{tabular}	
-	
+
+
+		\end{tabular}
+
 	\section{Questions}
 		\subsection{Main Point of the Assignment}
-	
+
 		\subsection{Our Approach}
-	
-		\subsection{Ensuring Correctness}
-	
-		\subsection{What We Learned}
-	
-		\subsection{How to Evaluate and Prove Correctness}
->>>>>>> 2450cbed98e71692f106c44bb1c31e4bda928564
 
-			3f240860e80976e8e5b82f5d566d4b2b3f74a90a
-			& -
-			& Jeremy Fischer
-			& Sun Oct 29 12:10:32 2017
-			& added look\_iosched.c this is the file that will go in linux-yocto/block \\
-			\hline
-
-			d299da44095ef45e7590747aac3551dd2e948420
-			& -
-			& Jeremy Fischer
-			& Sun Oct 29 11:28:27 2017
-			& removed the Kconfig file that was place in the directory -- it's not needed. Edited the linux-yocto/block/Kconfig.iosched file to account for the LOOK scheduler. Also added the LOOK's object file to be compiled in the linux-yocto/block/Makefil \\
-			\hline
-
-			cafa958cb8b0c25f44d9c4a5c0ae5a0c02dba711
-			& -
-			& Omeed Habibelahian
-			& Sat Oct 28 18:02:32 2017
-			& Created patch file and added Kconfig.iosched file \\
-			\hline
-
-			3215e83f28b90e3e221b13b60d6ad4be54a25b34
-			& -
-			& Jeremy Fischer
-			& Sat Oct 28 16:20:06 2017
-			& added the catch for the condition where there is only one request in the queue \\
-			\hline
-
-			145a76b7b7899d386f7af74c0654fc0dda9d3b03
-			& -
-			& Jeremy Fischer
-			& Sat Oct 28 16:13:57 2017
-			& added the basic functionality of the dispatch function \\
-			\hline
-
-			a6992704765a50dedf02ee13defa020aa40f5460
-			& - 
-			& Jeremy Fischer
-			& Sat Oct 28 14:20:22 2017
-			& finished add function \\
-			\hline
-
-			0d044e7ddf66b250e60144efafae9992ca5fc71b
-			& -
-			& Jeremy Fischer
-			& Fri Oct 27 21:18:09 2017
-    			& finished the 'add' function \\
-			\hline
-
-			e2ad4a9dd9929f2f768d2d85306e3957e8eca039
-			& -
-			& Jeremy Fischer
-			& -Fri Oct 27 20:04:06 2017
-			& added comments to each function outlining what is taking place \\
-			\hline
-
-			322e61ea59a49d28b2b43d2bdf5e8a3226ceeaea
-			& c7ffb12 310f75b
-			& Jeremy Fischer
-			& Fri Oct 27 17:23:31 2017
-			& added the noop to look skeleton. This C file will be coverted to a LOOK scheduler \\
-			\hline
-			
-			c7ffb12c2beac940ce6c6c07707801bbc26651e0
-			& -
-			& Jeremy Fischer
-			& Fri Oct 27 17:22:52 2017
-			& added the noop to look skeleton. This C file will be coverted to a LOOK scheduler \\
-			\hline
-		\end{tabular}
-		
-		\begin{tabular}{| p{6.8cm} | p{1.3cm} | p{2.5cm} | p{2cm} | p{4.2cm} |}
-			\hline
-			Commit Code Number & Merge & Author & Date & Message \\ \hline
-			
-			310f75ba9aec87b0ff1bcd1ca1b0b0723952dbe4
-			& -
-			& Omeed Habibelahian
-			& Fri Oct 27 00:01:48 2017
-			& more work on including files \\
-			\hline
-
-			55b5e29917cfa6ee92067ec29f7c97b21d70d368
-			& f698ec5 fba558b
-			& Omeed Habibelahian
-			& Thu Oct 26 23:30:14 2017
-			& Merge branch 'master' of https://github.com /blazerzero/os2\_proj2 \\
-			\hline
-
-			f698ec52be56bfbe2f2af005af66b2aa765e5c5e
-			& -
-			& Omeed Habibelahian
-			& Thu Oct 26 23:30:12 2017
-			& Added $<$linux/elevator.h$>$ file to sstf\_iosched.c \\
-			\hline
-
-			fba558b0e902fc9960935505a34a9c3f3701ad06
-			& -
-			& Jeremy Fischer
-			& Thu Oct 26 19:41:04 2017
-			& updated algorithm to continue in direction, instead of chosing closest location like before \\
-			\hline
-
-			42a3d2abc569bda1c4c2c6fb73ab7f5a4b154c29
-			& -
-			& Jeremy Fischer
-			& Thu Oct 26 18:49:10 2017
-			& added corrected \_\_merge\_two functionality. Jobs in the closest direction are added \\
-			\hline
-
-			fbf6f9b5785b7dbac7a5e092a32b897baeb7e01b
-			& -
-			& Jeremy Fischer
-			& Thu Oct 26 18:36:10 2017
-			& copied over my local start to look scheduling to the repo version \\
-			\hline
-
-			08e89e5794900264638f64f16b61e715d0de2282
-			& -
-			& Jeremy Fischer
-			& Thu Oct 26 14:34:02 2017
-			& updated makefile to target correct tex src on os2 server. Removed IEEEtran.cls since its on server already \\
-			\hline
-
-			dbbf8881c4a7e6938cefe0c6e6b9ecf576d59565
-			& -
-			& Omeed Habibelahian
-			& Wed Oct 11 22:57:46 2017
-			& Mini tweaks \\
-			\hline
-
-			b4784fc51ec852bab0e2c26bcd70894d8478cad5
-			& -
-			& Omeed Habibelahian 
-			& Wed Oct 11 21:17:07 2017
-			& Added TeX file, .bib file, Makefile, and base C file. \\
-			\hline
-
-			8518251b8f31e5172abedd862ecfcde81e40e4b6
-			& -
-			& Omeed Habibelahian
-			& Wed Oct 11 20:59:13 2017
-			& Added IEEEtran.cls file for IEEEtran formatting for the writeup \\
-			\hline
-		\end{tabular}
-	
-	\section{Work Log}
-		\begin{tabular}{| p{4cm} | p{3cm} | p{2cm} | p{8cm} |}
-			\hline
-			Feature Completed & By Who & When & Comments \\ \hline
-			
-			Added initial files (TeX file, .bib file, Makefile, IEEEtran.cls file, and initial C file) to project directory
-			& Omeed Habibelahian
-			& October 11
-			& I added the TeX file for the writeup, bibliography file, Makefile for the TeX and C files, and an empty C 
-			program to our os2\_proj2 directory. I also added the IEEEtran class file for the writeup, but Jeremy would later
-			remove this file becuase it's already installed on the os2 class server.\\
-			\hline
-			
-			Corrected Makefile and removed IEEEtran.cls file from project directory
-			& Jeremy Fischer
-			& October 26
-			& Updated the Makefile to target the correct TeX source on the os2 server. Also removed the IEEEtran.cls file
-			from the project directory \\
-			\hline
-			
-			Added merge functionality to our LOOK scheduler
-			& Jeremy Fischer
-			& October 26
-			& Specifically added \_\_merge\_two functionality. At this point, jobs in the closest direction are added. \\
-			\hline
-			
-			Created skeleton for noop-to-look C file
-			& Jeremy Fischer
-			& October 27
-			& - \\
-			\hline
-			
-			Edited Makefile in linux-yocto-3.19/block directory - added code enabling the Makefile to compile our scheduler
-			& Omeed Habibelahian
-			& October 29
-			& - \\
-			\hline
-			
-			Edited Kconfig.iosched file in linux-yocto-3.19 to account for the LOOK scheduler.
-			& Jeremy Fischer
-			& October 29
-			& Also added the LOOK scheduler's object file to be compiled in the Makefile in the linux-yocto-3.19/block directory \\
-			\hline
-			
-			
-		\end{tabular}	
-	
-	\section{Questions}
-		\subsection{Main Point of the Assignment}
-	
-		\subsection{Our Approach}
-	
 		\subsection{Ensuring Correctness}
 			To ensure that the scheduler's code is acting as expected, we've added \textit{printk()} statements throughout the code. To check the output of the \textit{printk()} statements, type \textit{dmesg} in the command line or viewing \textit{/var/log/messages}. \\
 			Another way to verify that the scheduler works is to print the contents of \textit{/sys/block/hda/queue/scheduler}.
@@ -457,10 +240,10 @@
 					\item \textbf{SCREEN 1:} cat /sys/block/hda/queue/scheduler (this should now show [LOOK])
 				\end{enumerate}
 				\item Reboot to stop qemu.
-			\end{enumerate}	
-	
+			\end{enumerate}
+
 		\subsection{What We Learned}
-	
+
 		\subsection{How to Evaluate and Prove Correctness}
 			\textbf{Steps to Run with Patch}
 			\begin{enumerate}
