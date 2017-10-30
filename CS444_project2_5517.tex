@@ -253,10 +253,10 @@
 		\subsection{How to Evaluate and Prove Correctness}
 			\textbf{Steps to Run with Patch}
 			\begin{enumerate}
-				\item git clone "git://git.yoctoproject.org/linux-yocto-3.19" linux-yocto-3.19-new
+				\item git clone "git://git.yoctoproject.org/linux-yocto-3.19" linux-yocto-3.19-patched
 				\item Apply Patch
 				\begin{enumerate}
-					\item cp kernelAssn2.patch linux-yocto-3.19-new/block
+					\item cp kernelAssn2.patch linux-yocto-3.19-patched/block
 					\item cd linux-yocto-3.19-clean/block
 					\item patch $<$ kernelAssn2.patch
 				\end{enumerate}
@@ -267,7 +267,7 @@
 				\item In both screens, make sure to source the environment variable.
 				\begin{enumerate}
 					\item \textbf{SCREEN 1:}
-					qemu-system-i386 -gdb tcp::5517 -S -nographic -kernel linux-yocto-3.19-new/arch/x86/boot/bzImage -drive file=core-image-lsb-sdk-qemux86.ext4 -enable-kvm -net none -usb -localtime --no-reboot --append "root=/dev/hda rw console=ttyS0 debug"
+					qemu-system-i386 -gdb tcp::5517 -S -nographic -kernel linux-yocto-3.19-patched/arch/x86/boot/bzImage -drive file=core-image-lsb-sdk-qemux86.ext4 -enable-kvm -net none -usb -localtime --no-reboot --append "root=/dev/hda rw console=ttyS0 debug"
 					\item \textbf{SCREEN 2:} \$GDB
 					\item \textbf{SCREEN 2:} target remote :5517
 					\item \textbf{SCREEN 2:} continue
