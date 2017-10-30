@@ -14,10 +14,6 @@ TRG 		= $(SRC:%.tex=%.dvi)
 PSF 		= $(SRC:%.tex=%.ps)
 PDF 		= $(SRC:%.tex=%.pdf)
 
-TARGETS = noop-to-look-iosched
-CC_C = $(CROSS_TOOL)gcc
-CFLAGS = -Wall
-
 all: pdf ps $(TARGETS)
 
 pdf: $(PDF)
@@ -47,12 +43,7 @@ show: $(TRG)
 showps: $(PSF)
 	@for i in $(PSF) ; do $(GH) $$i & done
 
-$(TARGETS):
-	$(CC_C) $(CFLAGS) noop-to-look-iosched.c -o noop-to-look-iosched
-
 clean:
-	$(RM) noop-to-look-iosched
-	rm -rf noop-to-look-iosched.dSYM
 	rm -f *.pdf *.ps *.dvi *.out *.log *.aux *.bbl *.blg *.pyg
 
 .PHONY: all show clean ps pdf showps
