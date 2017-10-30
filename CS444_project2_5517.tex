@@ -16,7 +16,10 @@
 	\newpage
 
 	\section{Design}
-
+		We are basing our LOOK scheduler off of the noop-iosched module found in the block directory. We will replace the add request function with one that performs an on-the-fly insertion sort where each new request will be positioned in the request queue according to its block position (the request's sector). 
+		The dispatch function will service requests in one direction at a time. 
+		When the next request isn't "on the way" in the direction that the arm is heading this tells the scheduler there are no more requests headed this way.
+		At that point the scheduler will "turn around" and start scheduling requests in the opposite direction.
 	\section{Version Control Log}
 		\begin{tabular}{| p{6.8cm} | p{1.3cm} | p{2.5cm} | p{2cm} | p{4.2cm} |}
 			\hline
@@ -241,7 +244,6 @@
 			Once the qemu environment is booted, check the output of the \textit{printk()} statements by typeing \textit{dmesg} in the command line or by viewing \textit{/var/log/messages}.
 			The output produced by the \textit{printk} statements consists of where the disk\_head is currently, what the request\_que looks like (the request's block location), if the disk\_head is moving forward or backward, and where the disk\_head is moving next.
 		\subsection{What We Learned}
-			We learned the main points of this assignment\dots
 				\begin{itemize}
 					\item What the API available to create our own scheduler consists of
 					\item The linux-yocto file structure (i.e. where each type of resource is located)
@@ -261,6 +263,9 @@
 					\item patch $<$ kernelAssn2.patch
 				\end{enumerate}
 				\item cd ../
+				\item cp /scratch/files/config .config
+				\item make menuconfig
+				\item save and exit
 				\item make -j4 all
 				\item cd ../
 				\item Use \textit{screen} command to create two split screens.
@@ -277,6 +282,7 @@
 					\item \textbf{SCREEN 1:} cat /sys/block/hda/queue/scheduler (this should now show [LOOK])
 					\item \textbf{SCREEN 1:} type \textit{dmesg}. You should see the \textit{printk} statements, with their output (described above) proving that the LOOK scheduler is working correctly.
 				\end{enumerate}
+				\item  If no output from the \textit{printk} statements can be seen from the dmesg command, when reboot is entered you will see output.
 				\item Reboot to stop qemu.
 			\end{enumerate}
 
