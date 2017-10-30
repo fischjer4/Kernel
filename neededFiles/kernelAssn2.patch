@@ -1,6 +1,6 @@
 diff -Naur linux-yocto-3.19-new/block/Kconfig.iosched linux-yocto-3.19-withPatch/block/Kconfig.iosched
---- linux-yocto-3.19-new/block/Kconfig.iosched	2017-10-29 14:26:14.364641043 -0700
-+++ linux-yocto-3.19-withPatch/block/Kconfig.iosched	2017-10-29 14:36:28.631952536 -0700
+--- linux-yocto-3.19-new/block/Kconfig.iosched	2017-10-30 08:45:31.902097333 -0700
++++ linux-yocto-3.19-withPatch/block/Kconfig.iosched	2017-10-30 09:20:08.619344685 -0700
 @@ -12,6 +12,14 @@
  	  that do their own scheduling and require only minimal assistance from
  	  the kernel.
@@ -43,8 +43,8 @@ diff -Naur linux-yocto-3.19-new/block/Kconfig.iosched linux-yocto-3.19-withPatch
  
 diff -Naur linux-yocto-3.19-new/block/look_iosched.c linux-yocto-3.19-withPatch/block/look_iosched.c
 --- linux-yocto-3.19-new/block/look_iosched.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-yocto-3.19-withPatch/block/look_iosched.c	2017-10-29 14:36:28.632952553 -0700
-@@ -0,0 +1,242 @@
++++ linux-yocto-3.19-withPatch/block/look_iosched.c	2017-10-30 09:19:40.222863655 -0700
+@@ -0,0 +1,239 @@
 +/*
 +	 * Below is the LOOK IO elevator scheduler
 +	 * The structure is based off the NOOP scheduluer in 
@@ -135,8 +135,8 @@ diff -Naur linux-yocto-3.19-new/block/look_iosched.c linux-yocto-3.19-withPatch/
 +		}
 +		/*Assert that cur_req is valid*/
 +		if(cur_req){
-+			printk("disk_head is currently at: %llu \n", (unsigned long long)look->disk_head);
-+			look->disk_head = blk_rq_pos(cur_req) + blk_rq_sectors(cur_req); //keep track of head
++			printk("disk_head is currently at: %llu ---- ", (unsigned long long)look->disk_head);
++			look->disk_head = blk_rq_pos(cur_req) //keep track of head
 +			printk("disk_head is moving to: %llu \n", (unsigned long long)look->disk_head);			
 +			list_del_init(&cur_req->queuelist); //remove the cur_req from scheduler
 +			elv_dispatch_add_tail(req_q, cur_req); //add cur_req to the block's queue
@@ -157,7 +157,6 @@ diff -Naur linux-yocto-3.19-new/block/look_iosched.c linux-yocto-3.19-withPatch/
 +*/
 +static void look_add_request(struct request_queue *req_q, struct request *cur_req)
 +{
-+	int i = 0; /*solely used for printk() statement*/
 +	struct look_data *look = req_q->elevator->elevator_data;
 +	struct request *next_req, *prev_req;
 +
@@ -169,16 +168,14 @@ diff -Naur linux-yocto-3.19-new/block/look_iosched.c linux-yocto-3.19-withPatch/
 +		next_req = list_entry(look->queue.next, struct request, queuelist);
 +		prev_req = list_entry(look->queue.prev, struct request, queuelist);
 +		/*traverse the queue looking for where to place the cur_req	*/
-+		printk("cur_req location: %llu \n", (unsigned long long)blk_rq_pos(cur_req));
-+		printk("request_que up until cur_req: ");
++		printk("Request needing to be added - location: %llu \n", (unsigned long long)blk_rq_pos(cur_req));
++		printk("request_que up until the position of the new request: ");
 +		while(blk_rq_pos(cur_req) >= blk_rq_pos(next_req)){
-+			i++;
 +			printk("%llu ", (unsigned long long)blk_rq_pos(next_req));
 +			/*list_entry() gets the struct for the given entry*/
 +			next_req = list_entry(next_req->queuelist.next, struct request, queuelist);
 +			prev_req = list_entry(prev_req->queuelist.prev, struct request, queuelist);
 +		}
-+		printk("\n List is not empty --- moved cur_req to position %d \n", i);
 +		/*insert the cur_req ahead of the prev_req and behind the next_req*/
 +		list_add(&cur_req->queuelist, &prev_req->queuelist);
 +	}
@@ -289,8 +286,8 @@ diff -Naur linux-yocto-3.19-new/block/look_iosched.c linux-yocto-3.19-withPatch/
 +MODULE_DESCRIPTION("LOOK IO scheduler");
 \ No newline at end of file
 diff -Naur linux-yocto-3.19-new/block/Makefile linux-yocto-3.19-withPatch/block/Makefile
---- linux-yocto-3.19-new/block/Makefile	2017-10-29 14:26:14.364641043 -0700
-+++ linux-yocto-3.19-withPatch/block/Makefile	2017-10-29 14:36:25.053892505 -0700
+--- linux-yocto-3.19-new/block/Makefile	2017-10-30 08:45:31.902097333 -0700
++++ linux-yocto-3.19-withPatch/block/Makefile	2017-10-30 09:19:54.721109427 -0700
 @@ -18,8 +18,8 @@
  obj-$(CONFIG_IOSCHED_NOOP)	+= noop-iosched.o
  obj-$(CONFIG_IOSCHED_DEADLINE)	+= deadline-iosched.o
