@@ -88,8 +88,8 @@ static int look_dispatch(struct request_queue *req_q, int force)
 		}
 		/*Assert that cur_req is valid*/
 		if(cur_req){
-			printk("disk_head is currently at: %llu \n", (unsigned long long)look->disk_head);
-			look->disk_head = blk_rq_pos(cur_req) + blk_rq_sectors(cur_req); //keep track of head
+			printk("disk_head is currently at: %llu ---- ", (unsigned long long)look->disk_head);
+			look->disk_head = blk_rq_pos(cur_req) //keep track of head
 			printk("disk_head is moving to: %llu \n", (unsigned long long)look->disk_head);			
 			list_del_init(&cur_req->queuelist); //remove the cur_req from scheduler
 			elv_dispatch_add_tail(req_q, cur_req); //add cur_req to the block's queue
@@ -110,7 +110,6 @@ static int look_dispatch(struct request_queue *req_q, int force)
 */
 static void look_add_request(struct request_queue *req_q, struct request *cur_req)
 {
-	int i = 0; /*solely used for printk() statement*/
 	struct look_data *look = req_q->elevator->elevator_data;
 	struct request *next_req, *prev_req;
 
@@ -122,16 +121,14 @@ static void look_add_request(struct request_queue *req_q, struct request *cur_re
 		next_req = list_entry(look->queue.next, struct request, queuelist);
 		prev_req = list_entry(look->queue.prev, struct request, queuelist);
 		/*traverse the queue looking for where to place the cur_req	*/
-		printk("cur_req location: %llu \n", (unsigned long long)blk_rq_pos(cur_req));
-		printk("request_que up until cur_req: ");
+		printk("Request needing to be added - location: %llu \n", (unsigned long long)blk_rq_pos(cur_req));
+		printk("request_que up until the position of the new request: ");
 		while(blk_rq_pos(cur_req) >= blk_rq_pos(next_req)){
-			i++;
 			printk("%llu ", (unsigned long long)blk_rq_pos(next_req));
 			/*list_entry() gets the struct for the given entry*/
 			next_req = list_entry(next_req->queuelist.next, struct request, queuelist);
 			prev_req = list_entry(prev_req->queuelist.prev, struct request, queuelist);
 		}
-		printk("\n List is not empty --- moved cur_req to position %d \n", i);
 		/*insert the cur_req ahead of the prev_req and behind the next_req*/
 		list_add(&cur_req->queuelist, &prev_req->queuelist);
 	}
