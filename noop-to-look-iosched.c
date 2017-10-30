@@ -89,7 +89,7 @@ static int look_dispatch(struct request_queue *req_q, int force)
 		/*Assert that cur_req is valid*/
 		if(cur_req){
 			printk("disk_head is currently at: %llu ---- ", (unsigned long long)look->disk_head);
-			look->disk_head = blk_rq_pos(cur_req) //keep track of head
+			look->disk_head = blk_rq_pos(cur_req); //keep track of head
 			printk("disk_head is moving to: %llu \n", (unsigned long long)look->disk_head);			
 			list_del_init(&cur_req->queuelist); //remove the cur_req from scheduler
 			elv_dispatch_add_tail(req_q, cur_req); //add cur_req to the block's queue
