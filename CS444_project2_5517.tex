@@ -13,9 +13,6 @@
 
 \begin{document}
 	\maketitle
-	\begin{abstract}
-		The assignment consists of implementing the LOOK I/O scheduler on the virtual machine. We created two new files: noop-to-look-iosched.c and look-iosched.c. \textbf{NOTE: THIS PART IS NOT DONE YET}
-	\end{abstract}
 	\newpage
 
 	\section{Design}
@@ -220,50 +217,57 @@
 
 	\section{Questions}
 		\subsection{Main Point of the Assignment}
-
+			The main point of this assignment was to understand how IO schedulers work in Linux. 
+			This assignment familiarized us with\dots \\
+			\begin{itemize}
+				\item The API available to create our own scheduler
+				\item The linux-yocto file structure
+				\item The LOOK IO scheduler
+				\item Resources available for kernel development
+			\end{itemize}
 		\subsection{Our Approach}
-
+			We based our approach off of the block/noop-iosched.c NOOP scheduler.
+			To transform the NOOP scheduler to the LOOK scheduler we had to change the \textit{dispatch} and \textit{add} functions.
+			A lot of research was done to understand the kernel API.
+			Specifically, elevator.h and blkdev.h were heavily looked into.
+			The request queue remains sorted in ascending order. 
+			So, when a request is added to the request queue in the \textit{add} function the queue is traversed until the block position of the new request is no longer greater than the block position of the request next in the traversal. 
+			Like an on-the-fly insertion sort.
+			The dispatch function takes care of loading the next request. 
+			If the direction is moving in one direction and the next request's block position is in that direction then the next request is chosen.
+			If not, then this means that there are no more requests that need to be serviced in this direction, so the scheduler "turns around" and starts servicing requests in the opposite direction.
 		\subsection{Ensuring Correctness}
-			To ensure that the scheduler's code is acting as expected, we've added \textit{printk()} statements throughout the code. To check the output of the \textit{printk()} statements, type \textit{dmesg} in the command line or viewing \textit{/var/log/messages}. \\
-			Another way to verify that the scheduler works is to print the contents of \textit{/sys/block/hda/queue/scheduler}.
-			\begin{enumerate}
-				\item Use \textit{screen} command to create two split screens.
-				\item In both screens, make sure to source the environment variables.
-				\begin{enumerate}
-					\item \textbf{SCREEN 1:} qemu-system-i386 -gdb tcp::5517 -S -nographic -kernel linux-yocto-3.19/arch/x86/boot/bzImage -drive file=core-image-lsb-sdk-qemux86.ext4 -enable-kvm -net none -usb -localtime --no-reboot --append "root=/dev/hda rw console=ttyS0 debug"
-					\item \textbf{SCREEN 2:} \$GDB
-					\item \textbf{SCREEN 2:} target remote :5517
-					\item \textbf{SCREEN 2:} continue
-					\item \textbf{SCREEN 1:} log in as root
-					\item \textbf{SCREEN 1:} cat sys/block/hda/queue/scheduler and notice the name of your module. In this case LOOK.
-					\item \textbf{SCREEN 1:} echo 'LOOK' $>$ /sys/block/hda/queue/scheduler (this changes the scheduler)
-					\item \textbf{SCREEN 1:} cat /sys/block/hda/queue/scheduler (this should now show [LOOK])
-				\end{enumerate}
-				\item Reboot to stop qemu.
-			\end{enumerate}
-
+			To ensure that the scheduler's code is acting as expected, we've added \textit{printk()} statements throughout the code.
+			Once the qemu environment is booted, check the output of the \textit{printk()} statements by typeing \textit{dmesg} in the command line or by viewing \textit{/var/log/messages}.
+			The output produced by the \textit{printk} statements consists of where the disk\_head is currently, what the request\_que looks like (the request's block location), if the disk\_head is moving forward or backward, and where the disk\_head is moving next.
 		\subsection{What We Learned}
-
+			We learned the main points of this assignment\dots
+				\begin{itemize}
+					\item What the API available to create our own scheduler consists of
+					\item The linux-yocto file structure (i.e. where each type of resource is located)
+					\item The LOOK IO scheduler
+					\item Resources available for kernel development such as elixir.free-electrons.com and the Linux Kernel Development book by Robert Love
+					\item How to make a module in C
+				\end{itemize}
+			
 		\subsection{How to Evaluate and Prove Correctness}
 			\textbf{Steps to Run with Patch}
 			\begin{enumerate}
 				\item git clone "git://git.yoctoproject.org/linux-yocto-3.19" linux-yocto-3.19-new
-				\item git clone "git://git.yoctoproject.org/linux-yocto-3.19" linux-yocto-3.19-withPatch
-				\item cp Makefile Kconfig.iosched look\_iosched.c linux-yocto-3.19-withPatch/block
-				\item diff -Naur linux-yocto-3.19-new/block linux-yocto-3.19-withPatch $>$ kernelAssn2.patch
 				\item Apply Patch
 				\begin{enumerate}
 					\item cp kernelAssn2.patch linux-yocto-3.19-new/block
 					\item cd linux-yocto-3.19-clean/block
-					\item patch $<$ kernelAssn2.path
+					\item patch $<$ kernelAssn2.patch
 				\end{enumerate}
-				\item cd linux-yocto-3.19-withPatch
+				\item cd ../
 				\item make -j4 all
 				\item cd ../
 				\item Use \textit{screen} command to create two split screens.
-				\item In both screens, make sure to source the environment variables.
+				\item In both screens, make sure to source the environment variable.
 				\begin{enumerate}
-					\item \textbf{SCREEN 1:} qemu-system-i386 -gdb tcp::5517 -S -nographic -kernel linux-yocto-3.19/arch/x86/boot/bzImage -drive file=core-image-lsb-sdk-qemux86.ext4 -enable-kvm -net none -usb -localtime --no-reboot --append "root=/dev/hda rw console=ttyS0 debug"
+					\item \textbf{SCREEN 1:}
+					qemu-system-i386 -gdb tcp::5517 -S -nographic -kernel linux-yocto-3.19-new/arch/x86/boot/bzImage -drive file=core-image-lsb-sdk-qemux86.ext4 -enable-kvm -net none -usb -localtime --no-reboot --append "root=/dev/hda rw console=ttyS0 debug"
 					\item \textbf{SCREEN 2:} \$GDB
 					\item \textbf{SCREEN 2:} target remote :5517
 					\item \textbf{SCREEN 2:} continue
@@ -271,10 +275,10 @@
 					\item \textbf{SCREEN 1:} cat sys/block/hda/queue/scheduler and notice the name of your module. In this case LOOK.
 					\item \textbf{SCREEN 1:} echo 'LOOK' $>$ /sys/block/hda/queue/scheduler (this changes the scheduler)
 					\item \textbf{SCREEN 1:} cat /sys/block/hda/queue/scheduler (this should now show [LOOK])
+					\item \textbf{SCREEN 1:} type \textit{dmesg}. You should see the \textit{printk} statements, with their output (described above) proving that the LOOK scheduler is working correctly.
 				\end{enumerate}
 				\item Reboot to stop qemu.
 			\end{enumerate}
-	\bibliography{homework2_biblio}
-	\bibliographystyle{IEEEtran}
+
 
 \end{document}
