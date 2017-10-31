@@ -28,8 +28,8 @@
 10. In both screen make sure to source the enviornment variables
 	1. (screen 1) 
 	
-	⋅⋅⋅ *qemu-system-i386 -gdb tcp::5517 -S -nographic -kernel linux-yocto-3.19-patched/arch/x86/boot/bzImage -drive file=core-image-lsb-sdk-qemux86.ext4 -enable-kvm -net none -usb -localtime --no-reboot 	--append "root=/dev/hda rw console=ttyS0 debug"*
-	
+		*qemu-system-i386 -gdb tcp::5517 -S -nographic -kernel linux-yocto-3.19-patched/arch/x86/boot/bzImage -drive file=core-image-lsb-sdk-qemux86.ext4 -enable-kvm -net none -usb -localtime --no-reboot 	--append "root=/dev/hda rw console=ttyS0 debug"*
+
 	2. __(screen 2)__ *$GDB*
 	3. __(screen 2)__ *target remote :5517*
 	4. __(screen 2)__ *continue*
