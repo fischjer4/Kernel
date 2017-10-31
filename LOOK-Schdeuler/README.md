@@ -19,20 +19,20 @@
 4. Cp neededFiles/config  linux-yocto-3.19-withFiles/.config
 5. diff -Naur linux-yocto-3.19-patched/block   linux-yocto-3.19-withFiles/block > kernelAssn2.patch
 6. Apply Patch
-	... a. cp kernelAssn2.patch  linux-yocto-3.19-patched/block 
-	... b. cd linux-yocto-3.19-patched/block 
-	... c. patch < kernelAssn2.patch
+..a. cp kernelAssn2.patch  linux-yocto-3.19-patched/block 
+..b. cd linux-yocto-3.19-patched/block 
+..c. patch < kernelAssn2.patch
 7. Make -j4 all
 8. Cd ../
 9. Use screen command to create to split screens
 10. In both screen make sure to source the enviornment variables
-	... a. (screen 1) qemu-system-i386 -gdb tcp::5517 -S -nographic -kernel linux-yocto-3.19-patched/arch/x86/boot/bzImage -drive file=core-image-lsb-sdk-qemux86.ext4 -enable-kvm -net none -usb -localtime --no-reboot 	--append "root=/dev/hda rw console=ttyS0 debug"
-	... b. _(screen 2)_ $GDB
-	... c. _(screen 2)_ target remote :5517
-	... d. _(screen 2)_ continue
-	... e. _(screen 1)_ login as root
-	... f. _(screen 1)_ Cat /sys/block/hda/queue/scheduler and notice the name of your module. In this case LOOK
-	... g. _(screen 1)_ Echo 'LOOK' > /sys/block/hda/queue/scheduler this changes the scheduler
-	... h. _(screen 1)_ Cat /sys/block/hda/queue/scheduler should now show [LOOK]
-	... i. _(screen 1)_ *dmesg* (this will allow you to view output from the LOOK scheduler)
+..a. (screen 1) qemu-system-i386 -gdb tcp::5517 -S -nographic -kernel linux-yocto-3.19-patched/arch/x86/boot/bzImage -drive file=core-image-lsb-sdk-qemux86.ext4 -enable-kvm -net none -usb -localtime --no-reboot 	--append "root=/dev/hda rw console=ttyS0 debug"
+..b. _(screen 2)_ $GDB
+..c. _(screen 2)_ target remote :5517
+..d. _(screen 2)_ continue
+..e. _(screen 1)_ login as root
+..f. _(screen 1)_ Cat /sys/block/hda/queue/scheduler and notice the name of your module. In this case LOOK
+..g. _(screen 1)_ Echo 'LOOK' > /sys/block/hda/queue/scheduler this changes the scheduler
+..h. _(screen 1)_ Cat /sys/block/hda/queue/scheduler should now show [LOOK]
+..i. _(screen 1)_ *dmesg* (this will allow you to view output from the LOOK scheduler)
 11. Reboot to stop qemu
