@@ -27,12 +27,12 @@
 9. Use screen command to create to split screens
 10. In both screen make sure to source the enviornment variables
 	1. (screen 1) qemu-system-i386 -gdb tcp::5517 -S -nographic -kernel linux-yocto-3.19-patched/arch/x86/boot/bzImage -drive file=core-image-lsb-sdk-qemux86.ext4 -enable-kvm -net none -usb -localtime --no-reboot 	--append "root=/dev/hda rw console=ttyS0 debug"
-	2. _(screen 2)_ $GDB
-	3. _(screen 2)_ target remote :5517
-	4. _(screen 2)_ continue
-	5. _(screen 1)_ login as root
-	6. _(screen 1)_ Cat /sys/block/hda/queue/scheduler and notice the name of your module. In this case LOOK
-	7. _(screen 1)_ Echo 'LOOK' > /sys/block/hda/queue/scheduler this changes the scheduler
-	8. _(screen 1)_ Cat /sys/block/hda/queue/scheduler should now show [LOOK]
-	9. _(screen 1)_ *dmesg* (this will allow you to view output from the LOOK scheduler)
+	2. __(screen 2)__ $GDB
+	3. __(screen 2)__ target remote :5517
+	4. __(screen 2)__ continue
+	5. __(screen 1)__ login as root
+	6. __(screen 1)__ Cat /sys/block/hda/queue/scheduler and notice the name of your module. In this case LOOK
+	7. __(screen 1)__ Echo 'LOOK' > /sys/block/hda/queue/scheduler this changes the scheduler
+	8. __(screen 1)__ Cat /sys/block/hda/queue/scheduler should now show [LOOK]
+	9. __(screen 1)__ *dmesg* (this will allow you to view output from the LOOK scheduler)
 11. Reboot to stop qemu
