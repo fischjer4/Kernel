@@ -19,8 +19,8 @@
 4. Cp neededFiles/config  linux-yocto-3.19-withFiles/.config
 5. diff -Naur linux-yocto-3.19-patched/block   linux-yocto-3.19-withFiles/block > kernelAssn2.patch
 6. Apply Patch
-..1. cp kernelAssn2.patch  linux-yocto-3.19-patched/block 
-..2. cd linux-yocto-3.19-patched/block 
+⋅⋅1. cp kernelAssn2.patch  linux-yocto-3.19-patched/block 
+⋅⋅2. cd linux-yocto-3.19-patched/block 
 ..3. patch < kernelAssn2.patch
 7. Make -j4 all
 8. Cd ../
