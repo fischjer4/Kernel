@@ -13,4 +13,17 @@
 	\maketitle
 	\newpage
 	
+	Below are notes about the project...
+	\begin{enumerate}
+		\item Write a RAM disk device driver that registers it as block device
+		\item Using the crypto API, add encryption to the block device such that the device driver encrypts and decrypts data when it is written and read
+		\item This will be developed in the drivers/block directory
+		\item This will need to be a module, in order to use a module parameter.
+		\item The module must then be moved in to the running VM. Kevin recommends scp.
+		\item This is a block cypher, there may be more data than fits in one block of the cypher.
+		\item The key must be set as a module parameter
+		\item An incorrect key must produce gibberish
+		\item Create an ext2 file system on the block device (mkfs.ext2).
+	\end{enumerate}
+	
 \end{document}
