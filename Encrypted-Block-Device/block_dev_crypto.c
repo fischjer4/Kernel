@@ -66,35 +66,46 @@ struct crypto_cipher *tfm;
  	* Handle an I/O request.
  */
 static void sbd_transfer(struct sbd_device *dev, sector_t sector,
-		unsigned long nsect, char *buffer, int write) {
+						 unsigned long nsect, char *buffer, int write) {
+	
 	unsigned long offset = sector * logical_block_size;
-	unsigned long nbytes = nsect * logical_block_size;
+	unsigned long nbytes = nsect * logical_block_size; //num bytes to r/w
+	unsigned long i = 0; //used as block indexer
 
 	if ((offset + nbytes) > dev->size) {
-		printk (KERN_NOTICE "sbd: Beyond-end write (%ld %ld)\n", offset, nbytes);
+		printk(KERN_NOTICE "~BLKDEVCRYPT~ sbd_transfer() -- Beyond-end write (%ld %ld)\n", offset, nbytes);			
 		return;
 	}
-	if (write)
-		memcpy(dev->data + offset, buffer, nbytes);
-	else
-		memcpy(buffer, dev->data + offset, nbytes);
+	/*	
+		nbytes represents the number of bytes to be read/written.
+		The en/decrypt function handles a block at a time, so if
+		nbytes > blocksize then we must en/decrypt each block sequentially
+		one at a time
+	*/
+	if (write){
+		while(i < nbytes){
+			crypto_cipher_encrypt_one(tfm, (dev->data + offset + i), buffer + i);
+			i += crypto_cipher_blocksize(tfm) //go to next block
+		}
+	}
+	else{
+		memcpy(buffer, dev->data + offset, nbytes);	
+	}
 }
 
 static void sbd_request(struct request_queue *q) {
 	struct request *req;
 
+	/*get next request*/
 	req = blk_fetch_request(q);
 	while (req != NULL) {
-		// blk_fs_request() was removed in 2.6.36 - many thanks to
-		// Christian Paro for the heads up and fix...
-		//if (!blk_fs_request(req)) {
 		if (req == NULL || (req->cmd_type != REQ_TYPE_FS)) {
-			printk (KERN_NOTICE "Skip non-CMD request\n");
+			printk(KERN_NOTICE "~BLKDEVCRYPT~ sbd_request() -- [req] non-CMD request\n");			
 			__blk_end_request_all(req, -EIO);
 			continue;
 		}
-		sbd_transfer(&Device, blk_rq_pos(req), blk_rq_cur_sectors(req),
-				req->buffer, rq_data_dir(req));
+		sbd_transfer(&Device, blk_rq_pos(req), blk_rq_cur_sectors(req), req->buffer, rq_data_dir(req));
+		/*if this req is done, get the next one*/
 		if ( ! __blk_end_request_cur(req, 0) ) {
 			req = blk_fetch_request(q);
 		}
