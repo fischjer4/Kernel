@@ -83,18 +83,22 @@ static void sbd_transfer(struct sbd_device *dev, sector_t sector,
 		nbytes > blocksize then we must en/decrypt each block sequentially
 		one at a time
 	*/
+	printk("Read/Write %lu bytes from the block device", nbytes);
 	if (write){
+		printk("~BLKDEVCRYPT~ sbd_transfer() -- Write: before encryption: %s\n", buffer);			
 		while(i < nbytes){
 			crypto_cipher_encrypt_one(tfm, (dev->data + offset + i), buffer + i);
 			i += crypto_cipher_blocksize(tfm) //go to next block
 		}
+		printk("~BLKDEVCRYPT~ sbd_transfer() -- Write: after encryption: %s\n", dev->data + offset);					
 	}
 	else{
+		printk("~BLKDEVCRYPT~ sbd_transfer() -- Read: before decryption: %s\n", dev->data + offset);							
 		while(i < nbytes){
 			crypto_cipher_decrypt_one(tfm, buffer + i, (dev->data + offset + i));
 			i += crypto_cipher_blocksize(tfm) //go to next block
 		}
-		memcpy(buffer, dev->data + offset, nbytes);	
+		printk("~BLKDEVCRYPT~ sbd_transfer() -- Read: after decryption: %s\n", buffer);					
 	}
 }
 
