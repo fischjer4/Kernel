@@ -90,6 +90,10 @@ static void sbd_transfer(struct sbd_device *dev, sector_t sector,
 		}
 	}
 	else{
+		while(i < nbytes){
+			crypto_cipher_decrypt_one(tfm, buffer + i, (dev->data + offset + i));
+			i += crypto_cipher_blocksize(tfm) //go to next block
+		}
 		memcpy(buffer, dev->data + offset, nbytes);	
 	}
 }
