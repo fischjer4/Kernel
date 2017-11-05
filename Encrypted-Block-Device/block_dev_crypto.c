@@ -27,6 +27,7 @@
 #include <linux/genhd.h>
 #include <linux/blkdev.h>
 #include <linux/hdreg.h>
+#include <linux/crypto.h>
 
 MODULE_LICENSE("GPL");
 static char *Version = "1.4";
