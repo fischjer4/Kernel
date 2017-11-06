@@ -24,9 +24,12 @@ static char *Version = "1.4";
 
 static int major_num = 0;
 module_param(major_num, int, 0);
+
 static int logical_block_size = 512;
 module_param(logical_block_size, int, 0);
-static int nsectors = 1024; /* How big the drive is */
+
+/* How big the drive is */
+static int nsectors = 1024; 
 module_param(nsectors, int, 0);
 
 /* We can tweak our hardware sector size, but the kernel talks to us
