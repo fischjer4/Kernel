@@ -1,8 +1,11 @@
  /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
 *	- The skeleton for the block device code was taken from Pat Paterson at
 *		http://blog.superpat.com/2010/05/04/a-simple-block-driver-for-linux-kernel-2-6-31/
-*	- Crypto resource used
+*	- Crypto
 *		https://01.org/linuxgraphics/gfx-docs/drm/crypto/intro.html
+*		https://01.org/linuxgraphics/gfx-docs/drm/crypto/api-skcipher.html#single-block-cipher-api
+*	- Module Parameters
+*		http://www.makelinux.net/ldd3/chp-2-sect-8
   * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include <linux/module.h>
@@ -71,7 +74,7 @@ struct crypto_cipher *tfm;
 	* Print limit bytes from source
 	* Used to print from the buffer and block device memory
 */
-static void print_mem(source, limit){
+static void print_mem(char *source, int limit){
 	unsigned int i = 0;
 	while (i < limit){
 		printk("%c", source[i]);
@@ -89,6 +92,7 @@ static void sbd_transfer(struct sbd_device *dev, sector_t sector,
 	unsigned long nbytes = nsect * logical_block_size; //num bytes to r/w
 	unsigned long i = 0; //used as block indexer
 
+	/* if there's no more space in the drive, stop */
 	if ((offset + nbytes) > dev->size) {
 		printk(KERN_NOTICE "~BLKDEVCRYPT~ sbd_transfer() -- Beyond-end write (%ld %ld)\n", offset, nbytes);			
 		return;
@@ -102,7 +106,7 @@ static void sbd_transfer(struct sbd_device *dev, sector_t sector,
 
 	/*	
 		nbytes represents the number of bytes to be read/written.
-		The en/decrypt function handles a block at a time, so if
+		The en/decrypt function handles one block at a time, so if
 		nbytes > blocksize then we must en/decrypt each block sequentially
 		one at a time
 	*/
@@ -113,18 +117,18 @@ static void sbd_transfer(struct sbd_device *dev, sector_t sector,
 		/* while theres more blocks to write to, write */
 		while(i < nbytes){
 			crypto_cipher_encrypt_one(tfm, (dev->data + offset + i), buffer + i);
-			i += crypto_cipher_blocksize(tfm) //go to next block
+			i += crypto_cipher_blocksize(tfm); //go to next block
 		}
 		printk("~BLKDEVCRYPT~ sbd_transfer() -- Write: after encryption: ");					
-		print_mem(dev->data + offset, nbytes);					
+		print_mem((char *)(dev->data + offset), nbytes);					
 	}
 	else{
 		printk("~BLKDEVCRYPT~ sbd_transfer() -- Read: before decryption: ");					
-		print_mem(dev->data + offset, nbytes);	
+		print_mem((char *)(dev->data + offset), nbytes);					
 		/* while theres more blocks to read from, read */									
 		while(i < nbytes){
 			crypto_cipher_decrypt_one(tfm, buffer + i, (dev->data + offset + i));
-			i += crypto_cipher_blocksize(tfm) //go to next block
+			i += crypto_cipher_blocksize(tfm); //go to next block
 		}
 		printk("~BLKDEVCRYPT~ sbd_transfer() -- Read: after decryption: ");					
 		print_mem(buffer, nbytes);					
@@ -172,28 +176,29 @@ int sbd_getgeo(struct block_device * block_device, struct hd_geometry * geo) {
 /*
 	* Initialize Block Device With Kernel, which includes:
 		- block size
-		- major number
 		- crypto handle
 		- request queue
+		- major number
 		- gendisk structure
+		- tell kernel we're ready
 */
 static int __init sbd_init(void) {
-	/*Set Up Kernel Internal Device*/
+	/* Set Up Kernel Internal Device */
 	Device.size = nsectors * logical_block_size;
 	spin_lock_init(&Device.lock);
 	Device.data = vmalloc(Device.size);
 	if (Device.data == NULL)
 		return -ENOMEM;
 	
-	/*Initilize Crypto Handle*/
-	/*Middle arguement being 0 means use default cipher handling*/
+	/* Initilize Crypto Handle */
+	/* Middle arg being 0 means use default cipher handle */
 	tfm = crypto_alloc_cipher("aes", 0, 0);
 	if (IS_ERR(tfm)){
 		printk("~BLKDEVCRYPT~ sbd_init() -- [tfm] failed to initialize\n");
 		goto out;		
 	}
 	
-	/*Initilize The Request Queue */
+	/* Initilize The Request Queue */
 	Queue = blk_init_queue(sbd_request, &Device.lock);
 	if (Queue == NULL){
 		printk("~BLKDEVCRYPT~ sbd_init() -- [Queue] failed to initialize\n");		
@@ -231,13 +236,13 @@ static int __init sbd_init(void) {
 
 	return 0;
 
-out_unregister:
-	unregister_blkdev(major_num, "sbd");
-out:
-	vfree(Device.data);
-	/*clear the crypto handle*/
-	crypto_free_cipher(tfm);
-	return -ENOMEM;
+	out_unregister:
+		unregister_blkdev(major_num, "sbd");
+	out:
+		vfree(Device.data);
+		/*clear the crypto handle*/
+		crypto_free_cipher(tfm);
+		return -ENOMEM;
 }
 /*
 	* Exit the module, but first clean up
