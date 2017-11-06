@@ -18,7 +18,6 @@
 #include <linux/blkdev.h>
 #include <linux/hdreg.h>
 #include <linux/crypto.h> /* For Linux Crypto API */
-#include <linux/random.h> /* For get_random_int function, to initialize key */
 
 MODULE_LICENSE("GPL");
 static char *Version = "1.4";
@@ -107,7 +106,7 @@ static void sbd_transfer(struct sbd_device *dev, sector_t sector,
 		nbytes > blocksize then we must en/decrypt each block sequentially
 		one at a time
 	*/
-	printk("Read/Write %lu bytes from the block device", nbytes);
+	printk("%s %lu bytes from the block device", (write ? "write" : "read"), nbytes);
 	if (write){
 		printk("~BLKDEVCRYPT~ sbd_transfer() -- Write: before encryption: ");	
 		print_mem(buffer, nbytes);			
@@ -215,7 +214,6 @@ static int __init sbd_init(void) {
 		printk("~BLKDEVCRYPT~ sbd_init() -- [Device.gd] failed to initialize\n");				
 		goto out_unregister;
 	}
-
 	Device.gd->major = major_num;
 	Device.gd->first_minor = 0;
 	Device.gd->fops = &sbd_ops;
@@ -227,6 +225,9 @@ static int __init sbd_init(void) {
 	/*Final Registration Step With Kernel*/
 	add_disk(Device.gd);
 	printk("~BLKDEVCRYPT~ sbd_init() -- Successfully initialized block device\n");				
+	
+	/* For proof that key was loaded */
+	printk("~BLKDEVCRYPT~ sbd_init() -- crypto key: %s\n", key);				
 
 	return 0;
 
