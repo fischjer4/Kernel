@@ -17,10 +17,14 @@
 #include <linux/genhd.h>
 #include <linux/blkdev.h>
 #include <linux/hdreg.h>
-#include <linux/crypto.h>
+#include <linux/crypto.h> /* For Linux Crypto API */
+#include <linux/random.h> /* For get_random_int function, to initialize key */
 
 MODULE_LICENSE("GPL");
 static char *Version = "1.4";
+
+static const u8 crypto_key = get_random_int() % 255;    /* Function returns u32 value */
+module_param(crypto_key, const u8, 0);
 
 static int major_num = 0;
 module_param(major_num, int, 0);
