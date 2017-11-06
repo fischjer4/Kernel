@@ -20,13 +20,13 @@ config BLK_DEV_NULL_BLK
 
 #Jeremy’s loadable kernel module
 config BLK_DEV_CRYPTO
-	tristate “Crypto block device by Jeremy”
+	tristate "Crypto block device by Jeremy"
 	depends on BLK_DEV_CRYPTOLOOP
 	default m
 	---help---
 	  RAM disk device driver which presents the allocated chunk of memory as a
 	  Block device. The device performs encryption and decryption on data. 
-	  Default mindicates for it to be compiled as a loadable module.
+	  Default m indicates for it to be compiled as a loadable module.
 
 config BLK_DEV_FD
 	tristate "Normal floppy disk support"
