@@ -23,9 +23,6 @@
 MODULE_LICENSE("GPL");
 static char *Version = "1.4";
 
-static const u8 crypto_key = get_random_int() % 255;    /* Function returns u32 value */
-module_param(crypto_key, const u8, 0);
-
 static int major_num = 0;
 module_param(major_num, int, 0);
 
@@ -36,8 +33,15 @@ module_param(logical_block_size, int, 0);
 static int nsectors = 1024; 
 module_param(nsectors, int, 0);
 
-/* We can tweak our hardware sector size, but the kernel talks to us
-	in terms of 512 byte sectors */
+/* keylen, perm: rw_r_____ */
+static unsigned int keylen = 16;
+module_param(keylen, int, 0640);
+
+/* key, charp is char pointer type, perm: rw_r_____ */
+static char *key = "abcdefghijklmnop";
+module_param(key, charp, 0640);
+
+/* The kernel talks to us in terms of 512 byte sectors */
 #define KERNEL_SECTOR_SIZE 512
 
 /* Request Queue */
@@ -90,6 +94,13 @@ static void sbd_transfer(struct sbd_device *dev, sector_t sector,
 		printk(KERN_NOTICE "~BLKDEVCRYPT~ sbd_transfer() -- Beyond-end write (%ld %ld)\n", offset, nbytes);			
 		return;
 	}
+
+	/* set the crypto key */
+	if(crypto_cipher_setkey(tfm, key, keylen) < 0){
+		printk("~BLKDEVCRYPT~ sbd_transfer() -- [key] failed to initialize \n");			
+		return;
+	}
+
 	/*	
 		nbytes represents the number of bytes to be read/written.
 		The en/decrypt function handles a block at a time, so if
@@ -100,6 +111,7 @@ static void sbd_transfer(struct sbd_device *dev, sector_t sector,
 	if (write){
 		printk("~BLKDEVCRYPT~ sbd_transfer() -- Write: before encryption: ");	
 		print_mem(buffer, nbytes);			
+		/* while theres more blocks to write to, write */
 		while(i < nbytes){
 			crypto_cipher_encrypt_one(tfm, (dev->data + offset + i), buffer + i);
 			i += crypto_cipher_blocksize(tfm) //go to next block
@@ -109,7 +121,8 @@ static void sbd_transfer(struct sbd_device *dev, sector_t sector,
 	}
 	else{
 		printk("~BLKDEVCRYPT~ sbd_transfer() -- Read: before decryption: ");					
-		print_mem(dev->data + offset, nbytes);								
+		print_mem(dev->data + offset, nbytes);	
+		/* while theres more blocks to read from, read */									
 		while(i < nbytes){
 			crypto_cipher_decrypt_one(tfm, buffer + i, (dev->data + offset + i));
 			i += crypto_cipher_blocksize(tfm) //go to next block
