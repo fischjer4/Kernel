@@ -49,7 +49,7 @@ module_param(key, charp, 0640);
 static struct request_queue *Queue;
 
 /* Internal Representation Of The Block Device */
-static struct sbd_device {
+static struct crptblkd_device {
 	unsigned long size;
 	spinlock_t lock;
 	u8 *data;
@@ -57,10 +57,10 @@ static struct sbd_device {
 } Device;
 
 /* The device operations structure */
-int sbd_getgeo(struct block_device* , struct hd_geometry* );
-static struct block_device_operations sbd_ops = {
+int crptblkd_getgeo(struct block_device* , struct hd_geometry* );
+static struct block_device_operations crptblkd_ops = {
 		.owner  = THIS_MODULE,
-		.getgeo = sbd_getgeo
+		.getgeo = crptblkd_getgeo
 };
 
 /* Crypto Handle */
@@ -80,17 +80,16 @@ static void print_mem(unsigned char *source, unsigned int limit){
 		Note this will clutter your screen everytime you
 		choose to interact with the device.
 	*/
-	limit = 100;
+	limit = 70;
 	while (i < limit){
 		printk("%02X", (unsigned)source[i]);
      	i++;
 	}
-	printk("\n");
 }
 /*
  	* Handle an I/O request.
  */
-static void sbd_transfer(struct sbd_device *dev, sector_t sector,
+static void crptblkd_transfer(struct crptblkd_device *dev, sector_t sector,
 						 unsigned long nsect, char *buffer, int write) {
 	
 	unsigned long offset = sector * logical_block_size;
@@ -99,13 +98,13 @@ static void sbd_transfer(struct sbd_device *dev, sector_t sector,
 
 	/* if there's no more space in the drive, stop */
 	if ((offset + nbytes) > dev->size) {
-		printk(KERN_NOTICE "~BLKDEVCRYPT~ sbd_transfer() -- Beyond-end write (%ld %ld)\n", offset, nbytes);			
+		printk(KERN_NOTICE "~crptblkd~ crptblkd_transfer() -- Beyond-end write (%ld %ld)\n", offset, nbytes);			
 		return;
 	}
 
 	/* set the crypto key */
 	if(crypto_cipher_setkey(tfm, key, keylen) < 0){
-		printk("~BLKDEVCRYPT~ sbd_transfer() -- [key] failed to initialize \n");			
+		printk("~crptblkd~ crptblkd_transfer() -- [key] failed to initialize \n");			
 		return;
 	}
 
@@ -115,28 +114,30 @@ static void sbd_transfer(struct sbd_device *dev, sector_t sector,
 		nbytes > blocksize then we must en/decrypt each block sequentially
 		one at a time
 	*/
-	printk("%s %lu bytes from the block device", (write ? "write" : "read"), nbytes);
 	if (write){
-		printk("~BLKDEVCRYPT~ sbd_transfer() -- Write: before encryption: ");	
+		printk("----------------- crptblkd: Before ENcryption ----------------- \n");	
 		print_mem(buffer, nbytes);			
 		/* while theres more blocks to write to, write */
 		while(i < nbytes){
 			crypto_cipher_encrypt_one(tfm, (dev->data + offset + i), buffer + i);
 			i += crypto_cipher_blocksize(tfm); //go to next block
 		}
-		printk("~BLKDEVCRYPT~ sbd_transfer() -- Write: after encryption: ");					
-		print_mem(dev->data + offset, nbytes);					
+		printk("\n----------------- crptblkd: After ENcryption ----------------- \n");	
+		print_mem(dev->data + offset, nbytes);	
+		printk("\n\n")				
 	}
 	else{
-		printk("~BLKDEVCRYPT~ sbd_transfer() -- Read: before decryption: ");					
+		printk("----------------- crptblkd: Before DEcryption ----------------- \n");	
 		print_mem(dev->data + offset, nbytes);					
 		/* while theres more blocks to read from, read */									
 		while(i < nbytes){
 			crypto_cipher_decrypt_one(tfm, buffer + i, (dev->data + offset + i));
 			i += crypto_cipher_blocksize(tfm); //go to next block
 		}
-		printk("~BLKDEVCRYPT~ sbd_transfer() -- Read: after decryption: ");					
-		print_mem(buffer, nbytes);					
+		printk("\n----------------- crptblkd: After DEcryption ----------------- \n");	
+		print_mem(buffer, nbytes);			
+		printk("\n\n")				
+				
 	}
 }
 /*
@@ -144,18 +145,18 @@ static void sbd_transfer(struct sbd_device *dev, sector_t sector,
 	* If a request isn't finished, keep working on it
 		If it is, get the next one in line
 */
-static void sbd_request(struct request_queue *q) {
+static void crptblkd_request(struct request_queue *q) {
 	struct request *req;
 
 	/* get next request */
 	req = blk_fetch_request(q);
 	while (req != NULL) {
 		if (req == NULL || (req->cmd_type != REQ_TYPE_FS)) {
-			printk(KERN_NOTICE "~BLKDEVCRYPT~ sbd_request() -- [req] non-CMD request\n");			
+			printk(KERN_NOTICE "~crptblkd~ crptblkd_request() -- [req] non-CMD request\n");			
 			__blk_end_request_all(req, -EIO);
 			continue;
 		}
-		sbd_transfer(&Device, blk_rq_pos(req), blk_rq_cur_sectors(req), bio_data(req->bio), rq_data_dir(req));
+		crptblkd_transfer(&Device, blk_rq_pos(req), blk_rq_cur_sectors(req), bio_data(req->bio), rq_data_dir(req));
 		/* if this req is done, get the next one */
 		if ( ! __blk_end_request_cur(req, 0) ) {
 			req = blk_fetch_request(q);
@@ -167,7 +168,7 @@ static void sbd_request(struct request_queue *q) {
 	* calls this. We need to implement getgeo, since we can't
 	* use tools such as fdisk to partition the drive otherwise.
  */
-int sbd_getgeo(struct block_device * block_device, struct hd_geometry * geo) {
+int crptblkd_getgeo(struct block_device * block_device, struct hd_geometry * geo) {
 	long size;
 
 	/* We have no real geometry, of course, so make something up. */
@@ -187,11 +188,14 @@ int sbd_getgeo(struct block_device * block_device, struct hd_geometry * geo) {
 		- gendisk structure
 		- tell kernel we're ready
 */
-static int __init sbd_init(void) {
+static int __init crptblkd_init(void) {
 	/* Set Up Kernel Internal Device */
+	memset(&Device, 0, sizeof(struct crptblkd_device));
 	Device.size = nsectors * logical_block_size;
 	spin_lock_init(&Device.lock);
 	Device.data = vmalloc(Device.size);
+	/* clear all left over memory */
+	memset(Device.data, 0, Device.size);
 	if (Device.data == NULL)
 		return -ENOMEM;
 	
@@ -199,50 +203,50 @@ static int __init sbd_init(void) {
 	/* Middle arg being 0 means use default cipher handle */
 	tfm = crypto_alloc_cipher("aes", 0, 0);
 	if (IS_ERR(tfm)){
-		printk("~BLKDEVCRYPT~ sbd_init() -- [tfm] failed to initialize\n");
+		printk("~crptblkd~ crptblkd_init() -- [tfm] failed to initialize\n");
 		goto out;		
 	}
 	
 	/* Initilize The Request Queue */
-	Queue = blk_init_queue(sbd_request, &Device.lock);
+	Queue = blk_init_queue(crptblkd_request, &Device.lock);
 	if (Queue == NULL){
-		printk("~BLKDEVCRYPT~ sbd_init() -- [Queue] failed to initialize\n");		
+		printk("~crptblkd~ crptblkd_init() -- [Queue] failed to initialize\n");		
 		goto out;
 	}
 	blk_queue_logical_block_size(Queue, logical_block_size);
 
 	/*Register The Block Device*/
-	major_num = register_blkdev(major_num, "sbd");
+	major_num = register_blkdev(major_num, "crptblkd");
 	if (major_num < 0) {
-		printk(KERN_WARNING "~BLKDEVCRYPT~ sbd_init() -- [major_num] failed to initialize\n");
+		printk(KERN_WARNING "~crptblkd~ crptblkd_init() -- [major_num] failed to initialize\n");
 		goto out;
 	}
 	
 	/*And the gendisk structure*/
 	Device.gd = alloc_disk(16);
 	if (!Device.gd){
-		printk("~BLKDEVCRYPT~ sbd_init() -- [Device.gd] failed to initialize\n");				
+		printk("~crptblkd~ crptblkd_init() -- [Device.gd] failed to initialize\n");				
 		goto out_unregister;
 	}
 	Device.gd->major = major_num;
 	Device.gd->first_minor = 0;
-	Device.gd->fops = &sbd_ops;
+	Device.gd->fops = &crptblkd_ops;
 	Device.gd->private_data = &Device;
-	strcpy(Device.gd->disk_name, "sbd0");
+	strcpy(Device.gd->disk_name, "crptblkd0");
 	set_capacity(Device.gd, nsectors);
 	Device.gd->queue = Queue;
 
 	/*Final Registration Step With Kernel*/
 	add_disk(Device.gd);
-	printk("~BLKDEVCRYPT~ sbd_init() -- Successfully initialized block device\n");				
+	printk("----------------- crptblkd: Successfully initialized block device ----------------- \n");	
 	
 	/* For proof that key was loaded */
-	printk("~BLKDEVCRYPT~ sbd_init() -- crypto key: %s\n", key);				
+	printk("----------------- crptblkd: Key = %s ----------------- \n\n", key);		
 
 	return 0;
 
 	out_unregister:
-		unregister_blkdev(major_num, "sbd");
+		unregister_blkdev(major_num, "crptblkd");
 	out:
 		vfree(Device.data);
 		/*clear the crypto handle*/
@@ -252,11 +256,11 @@ static int __init sbd_init(void) {
 /*
 	* Exit the module, but first clean up
 */
-static void __exit sbd_exit(void)
+static void __exit crptblkd_exit(void)
 {
 	del_gendisk(Device.gd);
 	put_disk(Device.gd);
-	unregister_blkdev(major_num, "sbd");
+	unregister_blkdev(major_num, "crptblkd");
 	blk_cleanup_queue(Queue);
 	vfree(Device.data);
 	/*clear the crypto handle*/
@@ -265,5 +269,5 @@ static void __exit sbd_exit(void)
 
 MODULE_AUTHOR("Jeremy Fischer and Omeed Habibelahian");
 MODULE_DESCRIPTION("A block device driver with encryption and decryption");
-module_init(sbd_init);
-module_exit(sbd_exit);
+module_init(crptblkd_init);
+module_exit(crptblkd_exit);
