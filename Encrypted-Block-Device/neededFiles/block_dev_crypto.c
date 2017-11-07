@@ -263,7 +263,7 @@ static void __exit sbd_exit(void)
 	crypto_free_cipher(tfm);
 }
 
-MODULE_AUTHOR("Jeremy Fischer and Omeed");
+MODULE_AUTHOR("Jeremy Fischer and Omeed Habibelahian");
 MODULE_DESCRIPTION("A block device driver with encryption and decryption");
 module_init(sbd_init);
 module_exit(sbd_exit);

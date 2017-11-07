@@ -13,17 +13,29 @@
 	\maketitle
 	\newpage
 	
-	Below are notes about the project...
-	\begin{enumerate}
-		\item Write a RAM disk device driver that registers it as block device
-		\item Using the crypto API, add encryption to the block device such that the device driver encrypts and decrypts data when it is written and read
-		\item This will be developed in the drivers/block directory
-		\item This will need to be a module, in order to use a module parameter.
-		\item The module must then be moved in to the running VM. Kevin recommends scp.
-		\item This is a block cypher, there may be more data than fits in one block of the cypher.
-		\item The key must be set as a module parameter
-		\item An incorrect key must produce gibberish
-		\item Create an ext2 file system on the block device (mkfs.ext2).
-	\end{enumerate}
+	\section{Design}
+	\section{Version Control Log}
+	\section{Work Log}
+	\section{Questions}
+		\subsection{Main Point of the Assignment}
+			The main point of this assignment was to understand how to present a chunk of memory as a block device, as well as to familiarize ourselves with the Linux Kernel's Crypto API and learn how to use this API to enable encryption and decryption of data on our block device.
+		\subsection{Our Approach}
+		\subsection{Ensuring Correctness}
+			To ensure that the block device and the encryption/decryption code are acting as expected, we've added \textit{printk()} statements throughout the code. Once the qemu environment is booted, check the output of the \textit{printk()} statements by typing \textit{dmesg} in the command line or by viewing \textit{/var/log/messages}. The \textit{printk()} statements we've included indicate whether the device is reading or writing data, whether the block device was successfully initiated, and whether or not an initialization failure occurred anywhere in the code.
+		\subsection{What We Learned}
+		\subsection{How to Evaluate and Prove Correctness}
+	
+%	Below are notes about the project...
+%	\begin{enumerate}
+%		\item Write a RAM disk device driver that registers it as block device
+%		\item Using the crypto API, add encryption to the block device such that the device driver encrypts and decrypts data when it is written and read
+%		\item This will be developed in the drivers/block directory
+%		\item This will need to be a module, in order to use a module parameter.
+%		\item The module must then be moved in to the running VM. Kevin recommends scp.
+%		\item This is a block cypher, there may be more data than fits in one block of the cypher.
+%		\item The key must be set as a module parameter
+%		\item An incorrect key must produce gibberish
+%		\item Create an ext2 file system on the block device (mkfs.ext2).
+%	\end{enumerate}
 	
 \end{document}
