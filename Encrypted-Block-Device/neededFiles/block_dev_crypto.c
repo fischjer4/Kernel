@@ -82,7 +82,7 @@ static void print_mem(unsigned char *source, unsigned int limit){
 	*/
 	limit = 100;
 	while (i < limit){
-		print("%02X", (unsigned)source[i]);
+		printk("%02X", (unsigned)source[i]);
      	i++;
 	}
 	printk("\n");
