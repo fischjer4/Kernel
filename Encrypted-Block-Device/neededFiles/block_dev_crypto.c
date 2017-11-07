@@ -74,10 +74,10 @@ struct crypto_cipher *tfm;
 	* Print limit bytes from source
 	* Used to print from the buffer and block device memory
 */
-static void print_mem(unsigned char *source, unsigned int limit){
+static void print_mem(unsigned char *source, unsigned long limit){
 	unsigned int i = 0;
 	while (i < limit){
-		print("%02X", (unsigned)source[i]);
+		printk("%02X", (unsigned)source[i]);
      	i++;
 	}
 	printk("\n");
