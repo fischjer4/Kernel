@@ -23,7 +23,6 @@
 #include <linux/crypto.h> /* For Linux Crypto API */
 
 MODULE_LICENSE("GPL");
-static char *Version = "1.4";
 
 static int major_num = 0;
 module_param(major_num, int, 0);
@@ -58,6 +57,7 @@ static struct sbd_device {
 } Device;
 
 /* The device operations structure */
+int sbd_getgeo(struct block_device* , struct hd_geometry* );
 static struct block_device_operations sbd_ops = {
 		.owner  = THIS_MODULE,
 		.getgeo = sbd_getgeo
@@ -150,7 +150,7 @@ static void sbd_request(struct request_queue *q) {
 			__blk_end_request_all(req, -EIO);
 			continue;
 		}
-		sbd_transfer(&Device, blk_rq_pos(req), blk_rq_cur_sectors(req), req->buffer, rq_data_dir(req));
+		sbd_transfer(&Device, blk_rq_pos(req), blk_rq_cur_sectors(req), bio_data(req->bio), rq_data_dir(req));
 		/* if this req is done, get the next one */
 		if ( ! __blk_end_request_cur(req, 0) ) {
 			req = blk_fetch_request(q);
