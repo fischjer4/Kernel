@@ -24,6 +24,38 @@
 			To ensure that the block device and the encryption/decryption code are acting as expected, we've added \textit{printk()} statements throughout the code. Once the qemu environment is booted, check the output of the \textit{printk()} statements by typing \textit{dmesg} in the command line or by viewing \textit{/var/log/messages}. The \textit{printk()} statements we've included indicate whether the device is reading or writing data, whether the block device was successfully initiated, and whether or not an initialization failure occurred anywhere in the code.
 		\subsection{What We Learned}
 		\subsection{How to Evaluate and Prove Correctness}
+			\textbf{Steps to Run with Patch}
+			\begin{enumerate}
+				\item git clone "git://git.yoctoproject.org/linux-yocto-3.19" linux-yocto-3.19-patched
+				\item Apply Patch
+				\begin{enumerate}
+					\item cp KernelAssn3.patch linux-yocto-3.19-patched/block
+					\item cd linux-yocto-3.19-patched/block
+					\item patch $<$ kernelAssn3.patch
+				\end{enumerate}
+				\item cd ..
+				\item cp /scratch/files/config-3.19.2-yocto-standard .
+				\item make menuconfig
+				\item Save and Exit
+				\item make -j4 all
+				\item cd ..
+				\item Use \textit{screen} command to create two split-screens.
+				\item In both screens, make sure to source the environment variable.
+				\begin{enumerate}
+					\item \textbf{SCREEN 1:}
+						qemu-system-i386 -gdb tcp::5517 -S -nographic -kernel bzImage-qemux86.bin -drive file=core-image-lsb-sdk-qemux86.ext4,if=ide -enable-kvm -net none -usb -localtime --no-reboot --append "root=/dev/hda rw console=ttyS0 debug"
+					\item \textbf{SCREEN 2:} \$GDB
+					\item \textbf{SCREEN 2:} target remote :5517
+					\item \textbf{SCREEN 2:} continue
+					\item \textbf{SCREEN 1:} log in as root
+					\item \textbf{SCREEN 1:}
+					\item \textbf{SCREEN 1:}
+					\item \textbf{SCREEN 1:}
+					\item \textbf{SCREEN 1:}
+				\end{enumerate}
+				\item If no output from the \textit{printk()} statements can be seen from the dmesg command, when reboot is entered you will see output.
+				\item reboot (this stops qemu)
+			\end{enumerate}
 	
 %	Below are notes about the project...
 %	\begin{enumerate}
