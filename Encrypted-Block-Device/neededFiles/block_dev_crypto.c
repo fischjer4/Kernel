@@ -74,11 +74,11 @@ struct crypto_cipher *tfm;
 	* Print limit bytes from source
 	* Used to print from the buffer and block device memory
 */
-static void print_mem(char *source, int limit){
+static void print_mem(unsigned char *source, unsigned int limit){
 	unsigned int i = 0;
 	while (i < limit){
-		printk("%c", source[i]);
-		i++;
+		print("%02X", (unsigned)source[i]);
+     	i++;
 	}
 	printk("\n");
 }
@@ -120,11 +120,11 @@ static void sbd_transfer(struct sbd_device *dev, sector_t sector,
 			i += crypto_cipher_blocksize(tfm); //go to next block
 		}
 		printk("~BLKDEVCRYPT~ sbd_transfer() -- Write: after encryption: ");					
-		print_mem((char *)(dev->data + offset), nbytes);					
+		print_mem(dev->data + offset, nbytes);					
 	}
 	else{
 		printk("~BLKDEVCRYPT~ sbd_transfer() -- Read: before decryption: ");					
-		print_mem((char *)(dev->data + offset), nbytes);					
+		print_mem(dev->data + offset, nbytes);					
 		/* while theres more blocks to read from, read */									
 		while(i < nbytes){
 			crypto_cipher_decrypt_one(tfm, buffer + i, (dev->data + offset + i));
