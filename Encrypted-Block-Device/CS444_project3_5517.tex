@@ -1,0 +1,114 @@
+\documentclass[draftclsnofoot, onecolumn, 10pt, compsoc]{IEEEtran}
+
+\usepackage[english]{babel}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage[top=0.75in, bottom=0.75in, left=0.75in, right=0.75in]{geometry}
+
+\usepackage{tabu}
+\usepackage{longtable}
+
+\title{\textbf{Operating Systems II}\\Fall 2017\\Homework 3}
+
+\author{Omeed Habibelahian\\Jeremy Fischer\\Group 17}
+
+\begin{document}
+	\maketitle
+	\newpage
+	
+	\section{Design}
+	\section{Version Control Log}
+	\section{Work Log}
+	\section{Questions}
+		\subsection{Main Point of the Assignment}
+			The main point of this assignment was to understand how to present a chunk of memory as a block device, as well as to familiarize ourselves with the Linux Kernel's Crypto API and learn how to use this API to enable encryption and decryption of data on our block device.
+		\subsection{Our Approach}
+		\subsection{Ensuring Correctness}
+			To ensure that the block device and the encryption/decryption code are acting as expected, we've added \textit{printk()} statements throughout the code. Once the qemu environment is booted, check the output of the \textit{printk()} statements by typing \textit{dmesg} in the command line or by viewing \textit{/var/log/messages}. The \textit{printk()} statements we've included indicate whether the device is reading or writing data, whether the block device was successfully initiated, and whether or not an initialization failure occurred anywhere in the code.
+		\subsection{What We Learned}
+		\subsection{How to Evaluate and Prove Correctness}
+			\textbf{Steps to Run with Patch}
+			\begin{enumerate}
+				\item git clone "git://git.yoctoproject.org/linux-yocto-3.19" linux-yocto-3.19-patched
+				\item Apply Patch
+				\begin{enumerate}
+					\item cp KernelAssn3.patch linux-yocto-3.19-patched/block
+					\item cd linux-yocto-3.19-patched/block
+					\item patch $<$ kernelAssn3.patch
+				\end{enumerate}
+				\item cd ..
+				\item cp /scratch/files/config-3.19.2-yocto-standard .
+				\item make menuconfig
+				\item Save and Exit
+				\item make -j4 all
+				\item cd ..
+				\item Use \textit{screen} command to create two split-screens.
+				\item In both screens, make sure to source the environment variable.
+				\begin{enumerate}
+					\item \textbf{SCREEN 1:}
+						qemu-system-i386 -gdb tcp::5517 -S -nographic -kernel bzImage-qemux86.bin -drive file=core-image-lsb-sdk-qemux86.ext4,if=ide -enable-kvm -net none -usb -localtime --no-reboot --append "root=/dev/hda rw console=ttyS0 debug"
+					\item \textbf{SCREEN 2:} \$GDB
+					\item \textbf{SCREEN 2:} target remote :5517
+					\item \textbf{SCREEN 2:} continue
+					\item \textbf{SCREEN 1:} log in as root
+					\item \textbf{SCREEN 1:}
+					\item \textbf{SCREEN 1:}
+					\item \textbf{SCREEN 1:}
+					\item \textbf{SCREEN 1:}
+				\end{enumerate}
+				\item If no output from the \textit{printk()} statements can be seen from the dmesg command, when reboot is entered you will see output.
+				\item reboot (this stops qemu)
+			\end{enumerate}
+	
+	
+			\begin{center}
+				\begin{longtabu} to \textwidth {| X[4,l] | X[3,c] | X[8,l] |}
+					\hline
+					\textbf{Author} & \textbf{Date} & \textbf{Message} \\ \hline
+					fischjer4 & 2017-10-31 & First Commit for Encypted Block Device \\ \hline
+					blazerzero & 2017-10-31 & Added writeup files \\ \hline
+					fischjer4 & 2017-11-02 & changed name. There was a typo \\ \hline
+					fischjer4 & 2017-11-02 & Merge branch `master' of https://github.com/fischjer4/Kernel \\ \hline
+					fischjer & 2017-11-02 & removed not needed files \\ \hline
+					fischjer & 2017-11-02 & Merge branch `master' of https://github.com/fischjer4/Kernel \\ \hline
+					fischjer & 2017-11-02 & adding empty crypto-block-driver.c file \\ \hline
+					fischjer & 2017-11-02 & added cypto-block-device file \\ \hline
+					fischjer & 2017-11-02 & renamed file \\ \hline
+					fischjer & 2017-11-02 & added sbd skeleton to the block\_device\_crypto file \\ \hline
+					fischjer4 & 2017-11-05 & added crypto handle init and printk statements to \_\_init function \\ \hline
+					blazerzero & 2017-11-05 & Added \#include \textless{}linux.crypto.h\textgreater{} to block\_dev\_crypto.c \\ \hline
+					fischjer4 & 2017-11-05 & writing encrypted data to block is completed \\ \hline
+					fischjer4 & 2017-11-05 & Merge branch `master' of https://github.com/fischjer4/Kernel \\ \hline
+					fischjer4 & 2017-11-05 & added decryption section \\ \hline
+					fischjer4 & 2017-11-05 & added printk statements to print memory prior to enc/dec and after enc/dec \\ \hline
+					fischjer4 & 2017-11-05 & added a print\_mem function which prints the elements of the buffer and memory of the block device \\ \hline
+					blazerzero & 2017-11-05 & Included \textless{}linux/random.h\textgreater{} to initialize the key randomly. Also created new static const u8 variable for the key. \\ \hline
+					fischjer4 & 2017-11-05 & added comments to code \\ \hline
+					fischjer4 & 2017-11-05 & Merge branch `master' of https://github.com/fischjer4/Kernel \\ \hline
+					fischjer4 & 2017-11-05 & set key as module\_param \\ \hline
+					fischjer4 & 2017-11-05 & added printk statement for key so we know it was loaded properly \\ \hline
+					fischjer4 & 2017-11-06 & added comments \\ \hline
+					fischjer & 2017-11-06 & added Makefile, Kconfig and added them along with the module C file to a neededFiles directory \\ \hline
+					fischjer4 & 2017-11-06 & fixed syntax error in Kconfig file \\ \hline
+					fischjer & 2017-11-06 & fixed Kconfig line endings error \\ \hline
+					fischjer & 2017-11-06 & changed req-\textgreater{}buffer to bio\_data(req-\textgreater{}bio) in sbd\_transfer(). req-\textgreater{}buffer is no longer a thing in this version of linux, and thus errors were produced with it \\ \hline
+					fischjer & 2017-11-06 & fixed print\_mem to print hex, printing chars wouldn't work obviosuly \\ \hline
+					fischjer & 2017-11-06 & fixed print --\textgreater{} printk syntax error \\ \hline
+					fischjer & 2017-11-06 & changed print\_mem size to only 100 bytes. Printing all bytes CLUTTERED the screen \\ \hline
+					fischjer & 2017-11-06 & fixed printk error  \\ \hline
+				\end{longtabu}
+			\end{center}
+%	Below are notes about the project...
+%	\begin{enumerate}
+%		\item Write a RAM disk device driver that registers it as block device
+%		\item Using the crypto API, add encryption to the block device such that the device driver encrypts and decrypts data when it is written and read
+%		\item This will be developed in the drivers/block directory
+%		\item This will need to be a module, in order to use a module parameter.
+%		\item The module must then be moved in to the running VM. Kevin recommends scp.
+%		\item This is a block cypher, there may be more data than fits in one block of the cypher.
+%		\item The key must be set as a module parameter
+%		\item An incorrect key must produce gibberish
+%		\item Create an ext2 file system on the block device (mkfs.ext2).
+%	\end{enumerate}
+	
+\end{document}

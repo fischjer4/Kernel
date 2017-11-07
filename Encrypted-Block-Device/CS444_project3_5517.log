@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017) (preloaded format=pdflatex 2017.5.23)  7 NOV 2017 13:59
+This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017) (preloaded format=pdflatex 2017.5.23)  7 NOV 2017 14:07
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -309,18 +309,18 @@ Package: longtable 2014/10/28 v4.11 Multi-page Table package (DPC)
 (./CS444_project3_5517.aux)
 \openout1 = `CS444_project3_5517.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 17.
-LaTeX Font Info:    ... okay on input line 17.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 17.
-LaTeX Font Info:    ... okay on input line 17.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 17.
-LaTeX Font Info:    ... okay on input line 17.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 17.
-LaTeX Font Info:    ... okay on input line 17.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 17.
-LaTeX Font Info:    ... okay on input line 17.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 17.
-LaTeX Font Info:    ... okay on input line 17.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 15.
+LaTeX Font Info:    ... okay on input line 15.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 15.
+LaTeX Font Info:    ... okay on input line 15.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 15.
+LaTeX Font Info:    ... okay on input line 15.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 15.
+LaTeX Font Info:    ... okay on input line 15.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 15.
+LaTeX Font Info:    ... okay on input line 15.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 15.
+LaTeX Font Info:    ... okay on input line 15.
 
 -- Lines per column: 39 (approximate, difference = 14.73578pt).
 (/usr/local/texlive/2017/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
@@ -416,43 +416,65 @@ e
 * \@reversemarginfalse
 * (1in=72.27pt=25.4mm, 1cm=28.453pt)
 
-LaTeX Font Info:    Try loading font information for OT1+phv on input line 18.
+LaTeX Font Info:    Try loading font information for OT1+phv on input line 16.
 (/usr/local/texlive/2017/texmf-dist/tex/latex/psnfss/ot1phv.fd
 File: ot1phv.fd 2001/06/04 scalable font definitions for OT1/phv.
 )
 LaTeX Font Info:    Font shape `OT1/phv/bx/n' in size <24.09> not available
-(Font)              Font shape `OT1/phv/b/n' tried instead on input line 18.
-LaTeX Font Info:    Calculating math sizes for size <11.04124> on input line 18
+(Font)              Font shape `OT1/phv/b/n' tried instead on input line 16.
+LaTeX Font Info:    Calculating math sizes for size <11.04124> on input line 16
 .
-LaTeX Font Info:    Try loading font information for U+pzd on input line 18.
+LaTeX Font Info:    Try loading font information for U+pzd on input line 16.
 
 (/usr/local/texlive/2017/texmf-dist/tex/latex/psnfss/upzd.fd
 File: upzd.fd 2001/06/04 font definitions for U/pzd.
 ) [1{/usr/local/texlive/2017/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
-(/usr/local/texlive/2017/texmf-dist/tex/latex/psnfss/omlppl.fd)
-Underfull \vbox (badness 10000) detected at line 69
+LaTeX Font Info:    Font shape `OT1/phv/bx/n' in size <11.04124> not available
+(Font)              Font shape `OT1/phv/b/n' tried instead on input line 19.
+LaTeX Font Info:    Font shape `OT1/phv/bx/sc' in size <11.04124> not available
+
+(Font)              Font shape `OT1/phv/b/sc' tried instead on input line 19.
+LaTeX Font Info:    Font shape `OT1/phv/bx/n' in size <9.53561> not available
+(Font)              Font shape `OT1/phv/b/n' tried instead on input line 23.
+LaTeX Font Info:    Calculating math sizes for size <9.53561> on input line 37.
+
+
+Overfull \hbox (0.86493pt too wide) in paragraph at lines 48--50
+[]\OT1/ppl/b/n/9.53561 SCREEN 1: \OT1/ppl/m/n/9.53561 qemu-system-i386 -gdb tcp
+::5517 -S -nographic -kernel bzImage-qemux86.bin -drive file=core-
  []
 
-[2] [3] (./CS444_project3_5517.aux) ) 
+
+Overfull \hbox (26.13461pt too wide) in paragraph at lines 48--50
+\OT1/ppl/m/n/9.53561 image-lsb-sdk-qemux86.ext4,if=ide -enable-kvm -net none -u
+sb -localtime --no-reboot --append "root=/dev/hda
+ []
+
+[2] (/usr/local/texlive/2017/texmf-dist/tex/latex/psnfss/omlppl.fd)
+Underfull \vbox (badness 10000) detected at line 99
+ []
+
+[3] [4] (./CS444_project3_5517.aux) ) 
 Here is how much of TeX's memory you used:
- 4878 strings out of 492995
- 72897 string characters out of 6132704
- 186527 words of memory out of 5000000
- 8368 multiletter control sequences out of 15000+600000
- 33988 words of font info for 82 fonts, out of 8000000 for 9000
+ 4880 strings out of 492995
+ 72905 string characters out of 6132704
+ 186396 words of memory out of 5000000
+ 8365 multiletter control sequences out of 15000+600000
+ 39651 words of font info for 89 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 39i,10n,25p,306b,450s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 39i,10n,25p,612b,450s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/local/texlive/2017/texmf-dist/fonts/
 enc/dvips/base/8r.enc}</usr/local/texlive/2017/texmf-dist/fonts/type1/public/am
 sfonts/cm/cmmi10.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/urw/helvet
 ic/uhvb8a.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/urw/helvetic/uhvr
 8a.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/urw/palatino/uplb8a.pfb>
 </usr/local/texlive/2017/texmf-dist/fonts/type1/urw/palatino/uplr8a.pfb></usr/l
-ocal/texlive/2017/texmf-dist/fonts/type1/urw/zapfding/uzdr.pfb>
-Output written on CS444_project3_5517.pdf (3 pages, 60468 bytes).
+ocal/texlive/2017/texmf-dist/fonts/type1/urw/palatino/uplri8a.pfb></usr/local/t
+exlive/2017/texmf-dist/fonts/type1/urw/zapfding/uzdr.pfb>
+Output written on CS444_project3_5517.pdf (4 pages, 80217 bytes).
 PDF statistics:
- 39 PDF objects out of 1000 (max. 8388607)
- 27 compressed objects within 1 object stream
+ 46 PDF objects out of 1000 (max. 8388607)
+ 32 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
  1 words of extra memory for PDF output out of 10000 (max. 10000000)
 
