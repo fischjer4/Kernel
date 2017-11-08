@@ -83,8 +83,8 @@
 				\item git checkout v3.19.2
 				\item Apply Patch
 				\begin{enumerate}
-					\item cp ../kernAssn3.patch linux-yocto-3.19-patched/drivers/block
-					\item cd linux-yocto-3.19-patched/drivers/block
+					\item cp ../kernAssn3.patch drivers/block
+					\item cd drivers/block
 					\item patch $<$ kernAssn3.patch
 				\end{enumerate}
 				\item cd ../../
@@ -111,18 +111,21 @@
 						Follow these instructions when prompted
 						\begin{itemize}
 							\item Command (m for help): \textbf{n}
-							\item Command action   e extended   p primary partition (1-4):\textbf{p}
+							\item Command action
+   e extended
+   p primary partition (1-4):
+\textbf{p}
 							\item Partition number (1-4): \textbf{1}
 							\item First sector(1-1023, default 1): \textbf{1}
 							\item Last sector, +sectors or +size{K,M,G,T,P} (1-1023, default 1023): \textbf{$<$press enter$>$}
 							\item Command (m for help): \textbf{w}
 						\end{itemize}
 					\item Create filesystem: \textit{mkfs.ext2 /dev/crptblkd0p1}
-					\item Mount filesystem: \textit{mount /dev/crptblkd0p1/mnt}
+					\item Mount filesystem: \textit{mount /dev/crptblkd0p1 /mnt}
 				\end{enumerate}
 				\item Now that the module is loaded and the drive is mounted, we will assert its correctness
 				\begin{itemize}
-					\item \textit{echo AA> /mnt/file1}
+					\item \textit{echo AA$>$ /mnt/file1}
 					\item \textit{ls -l /mnt} You should see file1 now
 					\item \textit{dmesg} It may take a few seconds, but you will see that "Before ENcryption" the data reads 41410000...0000....000. The output is in hex, and 4141 is AA. \\
 					in the "After ENcryption" section you can see that the data was encrypted to giberish now
