@@ -128,7 +128,7 @@ diff -Naur linux-clean/drivers/block/block_dev_crypto.c linux-withFiles/drivers/
 +		}
 +		printk("\n----------------- crptblkd: After ENcryption ----------------- \n");	
 +		print_mem(dev->data + offset, nbytes);	
-+		printk("\n\n")				
++		printk("\n\n");				
 +	}
 +	else{
 +		printk("----------------- crptblkd: Before DEcryption ----------------- \n");	
@@ -140,7 +140,7 @@ diff -Naur linux-clean/drivers/block/block_dev_crypto.c linux-withFiles/drivers/
 +		}
 +		printk("\n----------------- crptblkd: After DEcryption ----------------- \n");	
 +		print_mem(buffer, nbytes);			
-+		printk("\n\n")				
++		printk("\n\n");				
 +				
 +	}
 +}
