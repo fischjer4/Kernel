@@ -17,6 +17,18 @@
 	\newpage
 	
 	\section{Design}
+		\begin{enumerate}
+			\item Write a RAM disk device driver that registers it as block device
+			\item Using the crypto API, add encryption to the block device such that the device driver encrypts and decrypts data when it is written and read
+			\item This will be developed in the drivers/block directory
+			\item This will need to be a module, in order to use a module parameter.
+			\item The module must then be moved in to the running VM. Kevin recommends scp.
+			\item This is a block cypher, there may be more data than fits in one block of the cypher.
+			\item The key must be set as a module parameter
+			\item An incorrect key must produce gibberish
+			\item Create an ext2 file system on the block device (mkfs.ext2).
+		\end{enumerate}
+	
 	\section{Version Control Log}
 		\begin{center}
 			\begin{longtabu} to \textwidth {| X[4,l] | X[3,c] | X[8,l] |}
@@ -67,46 +79,58 @@
 			\textbf{Steps to Run with Patch}
 			\begin{enumerate}
 				\item git clone "git://git.yoctoproject.org/linux-yocto-3.19" linux-yocto-3.19-patched
+				\item cd linux-yocto-3.19-patched
+				\item git checkout v3.19.2
 				\item Apply Patch
 				\begin{enumerate}
-					\item cp KernelAssn3.patch linux-yocto-3.19-patched/block
-					\item cd linux-yocto-3.19-patched/block
-					\item patch $<$ kernelAssn3.patch
+					\item cp ../kernAssn3.patch linux-yocto-3.19-patched/drivers/block
+					\item cd linux-yocto-3.19-patched/drivers/block
+					\item patch $<$ kernAssn3.patch
 				\end{enumerate}
-				\item cd ..
-				\item cp /scratch/files/config-3.19.2-yocto-standard .
+				\item cd ../../
+				\item cp /scratch/files/core-image-lsb-sdk-qemux86.ext4 .
+				\item cp /scratch/files/config-3.19.2-yocto-standard .config
 				\item make menuconfig
 				\item Save and Exit
 				\item make -j4 all
-				\item cd ..
-				\item Use \textit{screen} command to create two split-screens.
-				\item In both screens, make sure to source the environment variable.
+				\item Use the \textit{screen} command to create two split-screens.
+				\item In both screens, make sure to source the environment variable located at /scratch/files.
 				\begin{enumerate}
-					\item \textbf{SCREEN 1:}
-						qemu-system-i386 -gdb tcp::5517 -S -nographic -kernel bzImage-qemux86.bin -drive file=core-image-lsb-sdk-qemux86.ext4,if=ide -enable-kvm -net none -usb -localtime --no-reboot --append "root=/dev/hda rw console=ttyS0 debug"
-					\item \textbf{SCREEN 2:} \$GDB
-					\item \textbf{SCREEN 2:} target remote :5517
-					\item \textbf{SCREEN 2:} continue
-					\item \textbf{SCREEN 1:} log in as root
-					\item \textbf{SCREEN 1:}
-					\item \textbf{SCREEN 1:}
-					\item \textbf{SCREEN 1:}
-					\item \textbf{SCREEN 1:}
+					\item \textbf{Screen 1:}
+						qemu-system-i386 -gdb tcp::5517 -S -nographic -kernel arch/x86/boot/bzImage -drive file=core-image-lsb-sdk-qemux86.ext4,if=ide -enable-kvm -usb -localtime --no-reboot --append "root=/dev/hda rw console=ttyS0 debug"
+					\item \textbf{Screen 2:} \$GDB
+					\item \textbf{Screen 2:} target remote :5517
+					\item \textbf{Screen 2:} continue
+					\item \textbf{Screen 1:} log in as root \\
+						The rest of the commands below reside in \textbf{Screen 1:}
+					\item scp \textbf{username}@os2.engr.oregonstate.edu:\textbf{your dir}/linux-yocto-3.19-patched/drivers/block/block\_dev\_crypto.ko /home/root
+					\item Initialize the module and set the key and kylen: \textit{insmod block\_dev\_crypto.ko key="abcdefghijklmnop" keylen=16}
+					\item \textit{dmesg} In the output you should see that the module was initialized and the key was set
+					\item \textit{dmesg -c} Clear the kernel 's output clutter
+					\item Partition the disk:\textit{ fdisk /dev/crptblkd0}
+						Follow these instructions when prompted
+						\begin{itemize}
+							\item Command (m for help): \textbf{n}
+							\item Command action   e extended   p primary partition (1-4):\textbf{p}
+							\item Partition number (1-4): \textbf{1}
+							\item First sector(1-1023, default 1): \textbf{1}
+							\item Last sector, +sectors or +size{K,M,G,T,P} (1-1023, default 1023): \textbf{$<$press enter$>$}
+							\item Command (m for help): \textbf{w}
+						\end{itemize}
+					\item Create filesystem: \textit{mkfs.ext2 /dev/crptblkd0p1}
+					\item Mount filesystem: \textit{mount /dev/crptblkd0p1/mnt}
 				\end{enumerate}
-				\item If no output from the \textit{printk()} statements can be seen from the dmesg command, when reboot is entered you will see output.
+				\item Now that the module is loaded and the drive is mounted, we will assert its correctness
+				\begin{itemize}
+					\item \textit{echo AA> /mnt/file1}
+					\item \textit{ls -l /mnt} You should see file1 now
+					\item \textit{dmesg} It may take a few seconds, but you will see that "Before ENcryption" the data reads 41410000...0000....000. The output is in hex, and 4141 is AA. \\
+					in the "After ENcryption" section you can see that the data was encrypted to giberish now
+					\item \textit{cat /mnt/file1} You will see AA as the output
+				\end{itemize}
+				\item Unmount the drive: \textit{umount /mnt}
+				\item Uninstall the module: \textit{rmmod block\_dev\_crypto}
 				\item reboot (this stops qemu)
 			\end{enumerate}
-%	Below are notes about the project...
-%	\begin{enumerate}
-%		\item Write a RAM disk device driver that registers it as block device
-%		\item Using the crypto API, add encryption to the block device such that the device driver encrypts and decrypts data when it is written and read
-%		\item This will be developed in the drivers/block directory
-%		\item This will need to be a module, in order to use a module parameter.
-%		\item The module must then be moved in to the running VM. Kevin recommends scp.
-%		\item This is a block cypher, there may be more data than fits in one block of the cypher.
-%		\item The key must be set as a module parameter
-%		\item An incorrect key must produce gibberish
-%		\item Create an ext2 file system on the block device (mkfs.ext2).
-%	\end{enumerate}
-	
+
 \end{document}
