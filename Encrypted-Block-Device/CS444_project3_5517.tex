@@ -74,6 +74,13 @@
 		\subsection{Our Approach}
 		\subsection{Ensuring Correctness}
 			To ensure that the block device and the encryption/decryption code are acting as expected, we've added \textit{printk()} statements throughout the code. Once the qemu environment is booted, check the output of the \textit{printk()} statements by typing \textit{dmesg} in the command line or by viewing \textit{/var/log/messages}. The \textit{printk()} statements we've included indicate whether the device is reading or writing data, whether the block device was successfully initiated, and whether or not an initialization failure occurred anywhere in the code.
+			
+			\textit{dmesg} should show what the data is before and after it encrypts and decrypts.
+			There are print statements that print the first 100 bytes of data that are written/read. 
+			The output is in hexadecimal.
+			By creating a file and writing "AA" to it, \textit{dmesg} will show that the data before encryption is 414100000 (followed by more 0's). 
+			4141 in hexadecimal is AA.
+			The data after encryption will be a bunch of gibberish, meaning the encryption worked correctly.
 		\subsection{What We Learned}
 		\subsection{How to Evaluate and Prove Correctness}
 			\textbf{Steps to Run with Patch}
@@ -118,7 +125,7 @@
 							\item Command (m for help): \textbf{w}
 						\end{itemize}
 					\item Create filesystem: \textit{mkfs.ext2 /dev/crptblkd0p1}
-					\item Mount filesystem: \textit{mount /dev/crptblkd0p1/mnt}
+					\item Mount filesystem: \textit{mount /dev/crptblkd0p1 /mnt}
 				\end{enumerate}
 				\item Now that the module is loaded and the drive is mounted, we will assert its correctness
 				\begin{itemize}
