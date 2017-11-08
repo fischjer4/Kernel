@@ -124,7 +124,7 @@ static void crptblkd_transfer(struct crptblkd_device *dev, sector_t sector,
 		}
 		printk("\n----------------- crptblkd: After ENcryption ----------------- \n");	
 		print_mem(dev->data + offset, nbytes);	
-		printk("\n\n")				
+		printk("\n\n");				
 	}
 	else{
 		printk("----------------- crptblkd: Before DEcryption ----------------- \n");	
@@ -136,7 +136,7 @@ static void crptblkd_transfer(struct crptblkd_device *dev, sector_t sector,
 		}
 		printk("\n----------------- crptblkd: After DEcryption ----------------- \n");	
 		print_mem(buffer, nbytes);			
-		printk("\n\n")				
+		printk("\n\n");				
 				
 	}
 }
