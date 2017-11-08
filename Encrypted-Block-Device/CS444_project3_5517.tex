@@ -129,7 +129,7 @@
 				\end{enumerate}
 				\item Now that the module is loaded and the drive is mounted, we will assert its correctness
 				\begin{itemize}
-					\item \textit{echo AA> /mnt/file1}
+					\item \textit{echo AA  $>$ /mnt/file1}
 					\item \textit{ls -l /mnt} You should see file1 now
 					\item \textit{dmesg} It may take a few seconds, but you will see that "Before ENcryption" the data reads 41410000...0000....000. The output is in hex, and 4141 is AA. \\
 					in the "After ENcryption" section you can see that the data was encrypted to giberish now
