@@ -14,7 +14,9 @@ TRG 		= $(SRC:%.tex=%.dvi)
 PSF 		= $(SRC:%.tex=%.ps)
 PDF 		= $(SRC:%.tex=%.pdf)
 
-all: pdf ps $(TARGETS)
+#all: pdf ps $(TARGETS)
+all:
+	make ps; make pdf;
 
 pdf: $(PDF)
 

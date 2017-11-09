@@ -6,6 +6,7 @@
 \usepackage[top=0.75in, bottom=0.75in, left=0.75in, right=0.75in]{geometry}
 
 \usepackage{hyperref}
+\usepackage{enumitem}
 
 \usepackage{tabu}
 \usepackage{longtable}
@@ -36,39 +37,72 @@
 			\begin{longtabu} to \textwidth {| X[4,l] | X[3,c] | X[8,l] |}
 				\hline
 				\textbf{Author} & \textbf{Date} & \textbf{Message} \\ \hline
+				
 				fischjer4 & 2017-10-31 & First Commit for Encypted Block Device \\ \hline
+				
 				blazerzero & 2017-10-31 & Added writeup files \\ \hline
+				
 				fischjer4 & 2017-11-02 & changed name. There was a typo \\ \hline
+				
 				fischjer4 & 2017-11-02 & Merge branch `master' of https://github.com/fischjer4/Kernel \\ \hline
+				
 				fischjer & 2017-11-02 & removed not needed files \\ \hline
+				
 				fischjer & 2017-11-02 & Merge branch `master' of https://github.com/fischjer4/Kernel \\ \hline
+				
 				fischjer & 2017-11-02 & adding empty crypto-block-driver.c file \\ \hline
+				
 				fischjer & 2017-11-02 & added cypto-block-device file \\ \hline
+				
 				fischjer & 2017-11-02 & renamed file \\ \hline
+				
 				fischjer & 2017-11-02 & added sbd skeleton to the block\_device\_crypto file \\ \hline
+				
 				fischjer4 & 2017-11-05 & added crypto handle init and printk statements to \_\_init function \\ \hline
+				
 				blazerzero & 2017-11-05 & Added \#include \textless{}linux.crypto.h\textgreater{} to block\_dev\_crypto.c \\ \hline
+				
 				fischjer4 & 2017-11-05 & writing encrypted data to block is completed \\ \hline
+				
 				fischjer4 & 2017-11-05 & Merge branch `master' of https://github.com/fischjer4/Kernel \\ \hline
+				
 				fischjer4 & 2017-11-05 & added decryption section \\ \hline
+				
 				fischjer4 & 2017-11-05 & added printk statements to print memory prior to enc/dec and after enc/dec \\ \hline
+				
 				fischjer4 & 2017-11-05 & added a print\_mem function which prints the elements of the buffer and memory of the block device \\ \hline
+				
 				blazerzero & 2017-11-05 & Included \textless{}linux/random.h\textgreater{} to initialize the key randomly. Also created new static const u8 variable for the key. \\ \hline
+				
 				fischjer4 & 2017-11-05 & added comments to code \\ \hline
+				
 				fischjer4 & 2017-11-05 & Merge branch `master' of https://github.com/fischjer4/Kernel \\ \hline
+				
 				fischjer4 & 2017-11-05 & set key as module\_param \\ \hline
+				
 				fischjer4 & 2017-11-05 & added printk statement for key so we know it was loaded properly \\ \hline
+				
 				fischjer4 & 2017-11-06 & added comments \\ \hline
+				
 				fischjer & 2017-11-06 & added Makefile, Kconfig and added them along with the module C file to a neededFiles directory \\ \hline
+				
 				fischjer4 & 2017-11-06 & fixed syntax error in Kconfig file \\ \hline
+				
 				fischjer & 2017-11-06 & fixed Kconfig line endings error \\ \hline
+				
 				fischjer & 2017-11-06 & changed req-\textgreater{}buffer to bio\_data(req-\textgreater{}bio) in sbd\_transfer(). req-\textgreater{}buffer is no longer a thing in this version of linux, and thus errors were produced with it \\ \hline
+				
 				fischjer & 2017-11-06 & fixed print\_mem to print hex, printing chars wouldn't work obviosuly \\ \hline
+				
 				fischjer & 2017-11-06 & fixed print --\textgreater{} printk syntax error \\ \hline
+				
 				fischjer & 2017-11-06 & changed print\_mem size to only 100 bytes. Printing all bytes CLUTTERED the screen \\ \hline
+				
 				fischjer & 2017-11-06 & fixed printk error  \\ \hline
+				\\
 			\end{longtabu}
 		\end{center}	
+	
 	\section{Work Log}
 		Our Work Log is the same as our Version Control Log above.
 		One can see what was done when, as well as that we followed our design pretty tightly by looking at the commit messages.
@@ -88,64 +122,110 @@
 			4141 in hexadecimal is AA.
 			The data after encryption will be a bunch of gibberish, meaning the encryption worked correctly.
 		\subsection{What We Learned}
+			We learned how to\dots 
+			\begin{itemize}
+				\item use the Linux crypto API
+				
+				\item create a module
+				
+				\item load and unload a module
+				
+				\item create a block device
+				
+				\item mount a drive
+			\end{itemize}
 		\subsection{How to Evaluate and Prove Correctness}
 			\textbf{Steps to Run with Patch}
 			\begin{enumerate}
 				\item git clone "git://git.yoctoproject.org/linux-yocto-3.19" linux-yocto-3.19-patched
+				
 				\item cd linux-yocto-3.19-patched
+				
 				\item git checkout v3.19.2
+				
 				\item Apply Patch
 				\begin{enumerate}
 					\item cp ../kernAssn3.patch drivers/block
+				
 					\item cd drivers/block
+				
 					\item patch $<$ kernAssn3.patch
 				\end{enumerate}
 				\item cd ../../
+				
 				\item cp /scratch/files/core-image-lsb-sdk-qemux86.ext4 .
+				
 				\item cp /scratch/files/config-3.19.2-yocto-standard .config
+				
 				\item make menuconfig
+				
 				\item Save and Exit
+				
 				\item make -j4 all
+				
 				\item Use the \textit{screen} command to create two split-screens.
+				
 				\item In both screens, make sure to source the environment variable located at /scratch/files.
 				\begin{enumerate}
-					\item \textbf{Screen 1:}
-						qemu-system-i386 -gdb tcp::5517 -S -nographic -kernel arch/x86/boot/bzImage -drive file=core-image-lsb-sdk-qemux86.ext4,if=ide -enable-kvm -usb -localtime --no-reboot --append "root=/dev/hda rw console=ttyS0 debug"
+					\item{\textbf{Screen 1:}qemu-system-i386 -gdb tcp::5517 -S -nographic -kernel arch/x86/boot/bzImage -drive file=core-image-lsb-sdk-qemux86.ext4,if=ide -enable-kvm -usb -localtime --no-reboot --append "root=/dev/hda rw console=ttyS0 debug"}
+					
 					\item \textbf{Screen 2:} \$GDB
+					
 					\item \textbf{Screen 2:} target remote :5517
+					
 					\item \textbf{Screen 2:} continue
-					\item \textbf{Screen 1:} log in as root \\
-						The rest of the commands below reside in \textbf{Screen 1:}
-					\item scp \textbf{username}@os2.engr.oregonstate.edu:\textbf{your dir}/linux-yocto-3.19-patched/drivers/block/block\_dev\_crypto.ko /home/root
-					\item Initialize the module and set the key and kylen: \textit{insmod block\_dev\_crypto.ko key="abcdefghijklmnop" keylen=16}
+					
+					\item \textbf{Screen 1:} log in as root.
+					
+					\item The rest of the commands below reside in \textbf{Screen 1:}
+					
+					\item{scp \textbf{username}@os2.engr.oregonstate.edu:\textbf{your dir}/linux-yocto-3.19-patched/drivers/block/block\_dev\_crypto.ko /home/root}
+					
+					\item{Initialize the module and set the key and kylen: \textit{insmod block\_dev\_crypto.ko key="abcdefghijklmnop" keylen=16}}
+					
 					\item \textit{dmesg} In the output you should see that the module was initialized and the key was set
+					
 					\item \textit{dmesg -c} Clear the kernel 's output clutter
+					
 					\item Partition the disk:\textit{ fdisk /dev/crptblkd0}
 						Follow these instructions when prompted
 						\begin{itemize}
 							\item Command (m for help): \textbf{n}
-							\item Command action
-   e extended
-   p primary partition (1-4):
-\textbf{p}
+					
+							\item Command action  e extended  p primary partition (1-4): \textbf{p}
+					
 							\item Partition number (1-4): \textbf{1}
+					
 							\item First sector(1-1023, default 1): \textbf{1}
+					
 							\item Last sector, +sectors or +size{K,M,G,T,P} (1-1023, default 1023): \textbf{$<$press enter$>$}
+					
 							\item Command (m for help): \textbf{w}
 						\end{itemize}
+					
 					\item Create filesystem: \textit{mkfs.ext2 /dev/crptblkd0p1}
+					
 					\item Mount filesystem: \textit{mount /dev/crptblkd0p1 /mnt}
 				\end{enumerate}
+				
 				\item Now that the module is loaded and the drive is mounted, we will assert its correctness
 				\begin{itemize}
 					\item \textit{echo AA $>$ /mnt/file1}
+				
 					\item \textit{ls -l /mnt} You should see file1 now
-					\item \textit{dmesg} It may take a few seconds, but you will see that "Before ENcryption" the data reads 41410000...0000....000. The output is in hex, and 4141 is AA. \\
-					in the "After ENcryption" section you can see that the data was encrypted to giberish now
+				
+					\item 
+						\textit{dmesg} It may take a few seconds, but you will see that "Before ENcryption" the data reads 41410000...0000....000. 
+						The output is in hex, and 4141 is AA.
+						in the "After ENcryption" section you can see that the data was encrypted to giberish now
+					
 					\item \textit{cat /mnt/file1} You will see AA as the output
 				\end{itemize}
+				
 				\item Unmount the drive: \textit{umount /mnt}
+				
 				\item Uninstall the module: \textit{rmmod block\_dev\_crypto}
+				
 				\item reboot (this stops qemu)
 			\end{enumerate}
 
