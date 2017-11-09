@@ -5,6 +5,8 @@
 \usepackage{graphicx}
 \usepackage[top=0.75in, bottom=0.75in, left=0.75in, right=0.75in]{geometry}
 
+\usepackage{hyperref}
+
 \usepackage{tabu}
 \usepackage{longtable}
 
@@ -21,9 +23,9 @@
 			\item Write a RAM disk device driver that registers it as block device
 			\item Using the crypto API, add encryption to the block device such that the device driver encrypts and decrypts data when it is written and read
 			\item This will be developed in the drivers/block directory
-			\item This will need to be a module, in order to use a module parameter.
+			\item This will need to be a module, in order to use a module parameter to set the key and key length.
 			\item The module must then be moved in to the running VM. Kevin recommends scp.
-			\item This is a block cypher, there may be more data than fits in one block of the cypher.
+			\item Since the Single Block Cipher encrypts one block at a time, we will loop over the number of blocks the data spans and encrypt each block sequentially
 			\item The key must be set as a module parameter
 			\item An incorrect key must produce gibberish
 			\item Create an ext2 file system on the block device (mkfs.ext2).
@@ -68,10 +70,14 @@
 			\end{longtabu}
 		\end{center}	
 	\section{Work Log}
+		Our Work Log is the same as our Version Control Log above.
+		One can see what was done when, as well as that we followed our design pretty tightly by looking at the commit messages.
+		
 	\section{Questions}
 		\subsection{Main Point of the Assignment}
-			The main point of this assignment was to understand how to present a chunk of memory as a block device, as well as to familiarize ourselves with the Linux Kernel's Crypto API and learn how to use this API to enable encryption and decryption of data on our block device.
+			The first main point of this assignment was to understand how a block device works, how a ramdisk drive works, and how to build and load a kernel module. The second main point of this assignment was to familiarize ourselves with the Linux Kernel's Crypto API and learn how to use this API to enable encryption and decryption of data on our block device.
 		\subsection{Our Approach}
+			We based our block device design off of the \href{http://blog.superpat.com/2010/05/04/a-simple-block-driver-for-linux-kernel-2-6-31/}{sbd.c} example by Pat Paterson. From there we researched how to use the Linux Crypto API and came across the "Single Block Cipher" API and thought it would be the best fit for adding encryption capabilities to our device. The Single Block Cipher only encrypts one block at a time, so we run a loop over the number of blocks the data spans and encrypt each block sequentially.
 		\subsection{Ensuring Correctness}
 			To ensure that the block device and the encryption/decryption code are acting as expected, we've added \textit{printk()} statements throughout the code. Once the qemu environment is booted, check the output of the \textit{printk()} statements by typing \textit{dmesg} in the command line or by viewing \textit{/var/log/messages}. The \textit{printk()} statements we've included indicate whether the device is reading or writing data, whether the block device was successfully initiated, and whether or not an initialization failure occurred anywhere in the code.
 			

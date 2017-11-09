@@ -30,7 +30,7 @@ module_param(major_num, int, 0);
 static int logical_block_size = 512;
 module_param(logical_block_size, int, 0);
 
-/* How big the drive is */
+/* How big the drive is (in 512 byte sectors) */
 static int nsectors = 1024; 
 module_param(nsectors, int, 0);
 
