@@ -163,11 +163,13 @@
 				
 				\item make -j4 all
 				
+				\item cp /scratch/files/core-image-lsb-sdk-qemux86.ext4 ../
+				
 				\item Use the \textit{screen} command to create two split-screens.
 				
 				\item In both screens, make sure to source the environment variable located at /scratch/files.
 				\begin{enumerate}
-					\item{\textbf{Screen 1:}qemu-system-i386 -gdb tcp::5517 -S -nographic -kernel arch/x86/boot/bzImage -drive file=core-image-lsb-sdk-qemux86.ext4,if=ide -enable-kvm -usb -localtime --no-reboot --append "root=/dev/hda rw console=ttyS0 debug"}
+					\item{\textbf{Screen 1:}qemu-system-i386 -gdb tcp::5517 -S -nographic -kernel arch/x86/boot/bzImage -drive file=../core-image-lsb-sdk-qemux86.ext4,if=ide -enable-kvm -usb -localtime --no-reboot --append "root=/dev/hda rw console=ttyS0 debug"}
 					
 					\item \textbf{Screen 2:} \$GDB
 					
