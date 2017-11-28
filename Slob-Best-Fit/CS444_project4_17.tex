@@ -1,0 +1,163 @@
+\documentclass[draftclsnofoot, onecolumn, 10pt, compsoc]{IEEEtran}
+
+\usepackage[english]{babel}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage[top=0.75in, bottom=0.75in, left=0.75in, right=0.75in]{geometry}
+
+\usepackage{listings}
+\usepackage{color}
+
+\usepackage{hyperref}
+\usepackage{enumitem}
+
+\usepackage{tabu}
+\usepackage{longtable}
+
+\title{\textbf{Operating Systems II}\\Fall 2017\\Homework 3}
+
+\author{Omeed Habibelahian\\Jeremy Fischer\\Group 17}
+
+\begin{document}
+	\maketitle
+	\newpage
+	
+	\section{Design}
+		\begin{lstlisting}
+		scan through all pages
+		  scan through all blocks
+		    record the difference between size needed and free units available
+			  If the difference is zero
+			    use this spot
+			    end
+			 if the difference is smaller than the previous difference
+			   use this location instead
+		If there's no possible locations
+		  create a new page
+		\end{lstlisting}
+		
+	
+	\section{Version Control Log}
+
+	\section{Work Log}
+		Our Work Log is the same as our Version Control Log above.
+		One can see what was done when, as well as that we followed our design pretty tightly by looking at the commit messages.
+		
+	\section{Questions}
+		\subsection{Main Point of the Assignment}
+
+		\subsection{Our Approach}
+
+		\subsection{Ensuring Correctness}
+
+		\subsection{What We Learned}
+			We learned how to\dots 
+			\begin{itemize}
+				\item use the Linux crypto API
+				
+				\item create a module
+				
+				\item load and unload a module
+				
+				\item create a block device
+				
+				\item mount a drive
+			\end{itemize}
+		\subsection{How to Evaluate and Prove Correctness}
+			\textbf{Steps to Run with Patch}
+			\begin{enumerate}
+				\item git clone "git://git.yoctoproject.org/linux-yocto-3.19" linux-yocto-3.19-patched
+				
+				\item cd linux-yocto-3.19-patched
+				
+				\item git checkout v3.19.2
+				
+				\item Apply Patch
+				\begin{enumerate}
+					\item cp ../kernAssn3.patch drivers/block
+				
+					\item cd drivers/block
+				
+					\item patch $<$ kernAssn3.patch
+				\end{enumerate}
+				\item cd ../../
+				
+				\item cp /scratch/files/core-image-lsb-sdk-qemux86.ext4 .
+				
+				\item cp /scratch/files/config-3.19.2-yocto-standard .config
+				
+				\item make menuconfig
+				
+				\item Save and Exit
+				
+				\item make -j4 all
+				
+				\item cp /scratch/files/core-image-lsb-sdk-qemux86.ext4 ../
+				
+				\item Use the \textit{screen} command to create two split-screens.
+				
+				\item In both screens, make sure to source the environment variable located at /scratch/files.
+				\begin{enumerate}
+					\item{\textbf{Screen 1:}qemu-system-i386 -gdb tcp::5517 -S -nographic -kernel arch/x86/boot/bzImage -drive file=../core-image-lsb-sdk-qemux86.ext4,if=ide -enable-kvm -usb -localtime --no-reboot --append "root=/dev/hda rw console=ttyS0 debug"}
+					
+					\item \textbf{Screen 2:} \$GDB
+					
+					\item \textbf{Screen 2:} target remote :5517
+					
+					\item \textbf{Screen 2:} continue
+					
+					\item \textbf{Screen 1:} log in as root.
+					
+					\item The rest of the commands below reside in \textbf{Screen 1:}
+					
+					\item{scp \textbf{username}@os2.engr.oregonstate.edu:\textbf{your dir}/linux-yocto-3.19-patched/drivers/block/block\_dev\_crypto.ko /home/root}
+					
+					\item{Initialize the module and set the key and kylen: \textit{insmod block\_dev\_crypto.ko key="abcdefghijklmnop" keylen=16}}
+					
+					\item \textit{dmesg} In the output you should see that the module was initialized and the key was set
+					
+					\item \textit{dmesg -c} Clear the kernel 's output clutter
+					
+					\item Partition the disk:\textit{ fdisk /dev/crptblkd0}
+						Follow these instructions when prompted
+						\begin{itemize}
+							\item Command (m for help): \textbf{n}
+					
+							\item Command action  e extended  p primary partition (1-4): \textbf{p}
+					
+							\item Partition number (1-4): \textbf{1}
+					
+							\item First sector(1-1023, default 1): \textbf{1}
+					
+							\item Last sector, +sectors or +size{K,M,G,T,P} (1-1023, default 1023): \textbf{$<$press enter$>$}
+					
+							\item Command (m for help): \textbf{w}
+						\end{itemize}
+					
+					\item Create filesystem: \textit{mkfs.ext2 /dev/crptblkd0p1}
+					
+					\item Mount filesystem: \textit{mount /dev/crptblkd0p1 /mnt}
+				\end{enumerate}
+				
+				\item Now that the module is loaded and the drive is mounted, we will assert its correctness
+				\begin{itemize}
+					\item \textit{echo AA $>$ /mnt/file1}
+				
+					\item \textit{ls -l /mnt} You should see file1 now
+				
+					\item 
+						\textit{dmesg} It may take a few seconds, but you will see that "Before ENcryption" the data reads 41410000...0000....000. 
+						The output is in hex, and 4141 is AA.
+						in the "After ENcryption" section you can see that the data was encrypted to giberish now
+					
+					\item \textit{cat /mnt/file1} You will see AA as the output
+				\end{itemize}
+				
+				\item Unmount the drive: \textit{umount /mnt}
+				
+				\item Uninstall the module: \textit{rmmod block\_dev\_crypto}
+				
+				\item reboot (this stops qemu)
+			\end{enumerate}
+
+\end{document}

@@ -47,6 +47,6 @@ all:
 	make pdf
 
 clean:
-	rm -f *.pdf *.ps *.dvi *.out *.log *.aux *.bbl *.blg *.pyg *.toc
+	rm -f *.pdf *.ps *.dvi *.out *.log *.aux *.bbl *.blg *.pyg *.toc *.synctex.gz
 
 .PHONY: all show clean ps pdf showps
