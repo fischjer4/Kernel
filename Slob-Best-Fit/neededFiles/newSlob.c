@@ -216,49 +216,137 @@ static void slob_free_pages(void *b, int order)
  */
 static void *slob_page_alloc(struct page *sp, size_t size, int align)
 {
-	slob_t *prev, *cur, *aligned = NULL;
-	int delta = 0, units = SLOB_UNITS(size);
-
+	slob_t *prev, *cur, *aligned = NULL, *tightest_blk = NULL;
+	slob_t *tightest_prev = NULL, *tightest_aligned = NULL;
+	int delta = 0, units = SLOB_UNITS(size), total_needed;
+	int tightest_fit = 0, cur_tightness, tightest_delta = 0;
+	slobidx_t tightest_fit = 0;
+	
 	for (prev = NULL, cur = sp->freelist; ; prev = cur, cur = slob_next(cur)) {
-		slobidx_t avail = slob_units(cur);
+		slobidx_t available = slob_units(cur);
 
 		if (align) {
 			aligned = (slob_t *)ALIGN((unsigned long)cur, align);
 			delta = aligned - cur;
 		}
-		if (avail >= units + delta) { /* room enough? */
-			slob_t *next;
 
-			if (delta) { /* need to fragment head to align? */
-				next = slob_next(cur);
-				set_slob(aligned, avail - delta, next);
-				set_slob(cur, delta, aligned);
-				prev = cur;
-				cur = aligned;
-				avail = slob_units(cur);
+		total_needed = units + delta;
+		cur_tightness = available - total_needed;
+		
+		/*is there enough room*/
+		if (available >= total_needed) {
+			/*if tighter fit, or first iteration*/
+			if (tightest_fit > cur_tightness) || tightest_blk == NULL) {
+				tightest_blk = cur;
+				tightest_prev = prev;
+				tightest_aligned = aligned;
+				tightest_delta = delta;
+				tightest_fit = cur_tightness;
+				/*if perfect fit, then break out. No need to compare more*/
+				if (tightest_fit == 0)
+					break;
 			}
-
-			next = slob_next(cur);
-			if (avail == units) { /* exact fit? unlink. */
-				if (prev)
-					set_slob(prev, slob_units(prev), next);
-				else
-					sp->freelist = next;
-			} else { /* fragment */
-				if (prev)
-					set_slob(prev, slob_units(prev), cur + units);
-				else
-					sp->freelist = cur + units;
-				set_slob(cur + units, avail - units, next);
-			}
-
-			sp->units -= units;
-			if (!sp->units)
-				clear_slob_page_free(sp);
-			return cur;
 		}
-		if (slob_last(cur))
-			return NULL;
+
+		/*if this is the last block*/
+		if (slob_last(cur)) {
+			break;
+		}
+	}
+
+	/*Found best-fitted/tightest block. Now, allocate it*/
+	if (tightest_blk != NULL){
+		slob_t *tightest_next;
+		slobidx_t tightest_avail = slob_units(tightest_blk);
+
+		if (tightest_delta) { /* need to fragment head to align? */
+			tightest_next = slob_next(tightest_blk);
+			set_slob(tightest_aligned, 
+					 (tightest_avail - tightest_delta), 
+					 tightest_next);
+			set_slob(tightest_blk, tightest_delta, tightest_aligned);
+			tightest_prev = tightest_blk;
+			tightest_blk = tightest_aligned;
+			tightest_avail = slob_units(tightest_blk);
+		}
+
+		tightest_next = slob_next(tightest_blk);
+
+		/* exact fit? unlink. */
+		if (tightest_avail == units) {
+			if (tightest_prev)
+				set_slob(tightest_prev, slob_units(tightest_prev), tightest_next);
+			else
+				sp->freelist = tightest_next;
+		} 
+		/* fragment */
+		else {
+			if (tightest_prev){
+				set_slob(tightest_prev, slob_units(tightest_prev), tightest_blk + units);
+			}
+			else{
+				sp->freelist = tightest_blk + units;
+			}
+			set_slob(tightest_blk + units, tightest_avail - units, tightest_next);
+		}
+
+		sp->units -= units;
+		if (!sp->units)
+			clear_slob_page_free(sp);
+		return tightest_blk;
+	}
+	/*couldn't fit size in any block*/
+	return NULL;
+}
+		
+}
+
+/*
+*This function makes sure that the page has enough space accounting for alignment and
+	returns the tightness metric
+ Go through all of this page's blocks.
+ 	If the required size fits exactly, then go ahead and return
+ 	Otherwise record the 'tightness' of the current block (i.e. spaces avilable - spaces needed)
+ 	If the tightest_fit > current tightness 
+	   	Make tightest_fit = current available slot
+*/
+static int slob_best_fit_page_check(struct page *sp, size_t size, int align)
+{
+	slob_t *prev, *cur, *aligned = NULL, *tightest_blk = NULL;
+	int delta = 0, units = SLOB_UNITS(size), total_needed;
+	slobidx_t tightest_fit, cur_tightness;
+
+	
+	for (prev = NULL, cur = sp->freelist; ; prev = cur, cur = slob_next(cur)) {
+		slobidx_t available = slob_units(cur);
+
+		if (align) {
+			aligned = (slob_t *)ALIGN((unsigned long)cur, align);
+			delta = aligned - cur;
+		}
+
+		total_needed = units + delta;
+		cur_tightness = available - total_needed;
+		
+		/*is there enough room*/
+		if (available >= total_needed) {
+			/*if tighter fit, or first iteration*/
+			if (tightest_fit > cur_tightness) || tightest_blk == NULL) {
+				tightest_blk = cur;
+				tightest_fit = cur_tightness;
+				/*if perfect fit, then just return. No need to compare more*/
+				if (tightest_fit == 0)
+					return tightest_fit;
+			}
+		}
+
+		/*if this is the last block*/
+		if (slob_last(cur)) {
+			/*if there was a valid fit, return the fit metric*/
+			if (tightest_blk != NULL)
+				return tightest_fit;
+			return -1;			
+		}
 	}
 }
 
@@ -268,10 +356,12 @@ static void *slob_page_alloc(struct page *sp, size_t size, int align)
 static void *slob_alloc(size_t size, gfp_t gfp, int align, int node)
 {
 	struct page *sp;
+	struct page *tightest_pg;
 	struct list_head *prev;
 	struct list_head *slob_list;
 	slob_t *b = NULL;
 	unsigned long flags;
+	int tightest_fit;
 
 	if (size < SLOB_BREAK1)
 		slob_list = &free_slob_small;
@@ -291,24 +381,33 @@ static void *slob_alloc(size_t size, gfp_t gfp, int align, int node)
 		if (node != NUMA_NO_NODE && page_to_nid(sp) != node)
 			continue;
 #endif
-		/* Enough room on this page? */
-		if (sp->units < SLOB_UNITS(size))
+		int cur_tightness = slob_best_fit_page_check(sp, size, align);
+		/*if size couldnt fit, move to next page*/
+		if(cur_tightness == -1)
 			continue;
-
-		/* Attempt to alloc */
-		prev = sp->lru.prev;
-		b = slob_page_alloc(sp, size, align);
-		if (!b)
-			continue;
-
-		/* Improve fragment distribution and reduce our average
-		 * search time by starting our next search here. (see
-		 * Knuth vol 1, sec 2.5, pg 449) */
-		if (prev != slob_list->prev &&
-				slob_list->next != prev->next)
-			list_move_tail(slob_list, prev->next);
-		break;
+		/*if perfect fit, then break out. No need to compare more*/
+		if (cur_tightness == 0){
+			tightest_pg = sp;
+			break;
+		}
+		/*if tighter fit, or first iteration*/
+		else if (tightest_fit > cur_tightness) || tightest_pg == NULL) {
+			tightest_pg = sp;
+			tightest_fit = cur_tightness;
+		}
 	}
+		
+	/* Attempt to alloc */
+	prev = sp->lru.prev;
+	b = slob_page_alloc(tightest_pg, size, align);
+
+	/* Improve fragment distribution and reduce our average
+		* search time by starting our next search here. (see
+		* Knuth vol 1, sec 2.5, pg 449) */
+	if (prev != slob_list->prev && slob_list->next != prev->next)
+		list_move_tail(slob_list, prev->next);
+	}
+	
 	spin_unlock_irqrestore(&slob_lock, flags);
 
 	/* Not enough space: must allocate a new page */
