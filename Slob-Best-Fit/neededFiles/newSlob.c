@@ -95,6 +95,10 @@ struct slob_block {
 };
 typedef struct slob_block slob_t;
 
+
+/*Used To Capture The Amount of Caimed Memory*/
+unsigned long mem_claimed = 0; 
+
 /*
  * All partially free slob pages go on these lists.
  */
@@ -222,8 +226,7 @@ static void *slob_page_alloc(struct page *sp, size_t size, int align)
 	slob_t *prev, *cur, *aligned = NULL, *tightest_blk = NULL;
 	slob_t *tightest_prev = NULL, *tightest_aligned = NULL;
 	int delta = 0, units = SLOB_UNITS(size), total_needed;
-	int tightest_fit = 0, cur_tightness, tightest_delta = 0;
-	slobidx_t tightest_fit = 0;
+	int cur_tightness, tightest_delta = 0, tightest_fit = -1;
 	
 	for (prev = NULL, cur = sp->freelist; ; prev = cur, cur = slob_next(cur)) {
 		slobidx_t available = slob_units(cur);
@@ -234,10 +237,10 @@ static void *slob_page_alloc(struct page *sp, size_t size, int align)
 		}
 
 		total_needed = units + delta;
-		cur_tightness = available - total_needed;
 		
 		/*is there enough room*/
 		if (available >= total_needed) {
+			cur_tightness = available - total_needed;
 			/*if tighter fit, or first iteration*/
 			if (tightest_fit > cur_tightness) || tightest_blk == NULL) {
 				tightest_blk = cur;
@@ -314,7 +317,7 @@ static int slob_best_fit_page_check(struct page *sp, size_t size, int align)
 {
 	slob_t *prev, *cur, *aligned = NULL, *tightest_blk = NULL;
 	int delta = 0, units = SLOB_UNITS(size), total_needed;
-	slobidx_t tightest_fit, cur_tightness;
+	int tightest_fit = -1, cur_tightness = -1;
 
 	
 	for (prev = NULL, cur = sp->freelist; ; prev = cur, cur = slob_next(cur)) {
@@ -326,11 +329,11 @@ static int slob_best_fit_page_check(struct page *sp, size_t size, int align)
 		}
 
 		total_needed = units + delta;
-		cur_tightness = available - total_needed;
 		
 		/*is there enough room*/
 		if (available >= total_needed) {
-			/*if tighter fit, or first iteration*/
+			cur_tightness = available - total_needed;
+			/*if tighter fit, or first iteration, switch to using that location*/
 			if (tightest_fit > cur_tightness) || tightest_blk == NULL) {
 				tightest_blk = cur;
 				tightest_fit = cur_tightness;
@@ -355,13 +358,13 @@ static int slob_best_fit_page_check(struct page *sp, size_t size, int align)
  */
 static void *slob_alloc(size_t size, gfp_t gfp, int align, int node)
 {
-	struct page *sp;
-	struct page *tightest_pg;
-	struct list_head *prev;
-	struct list_head *slob_list;
+	struct page *sp = NULL;
+	struct page *tightest_pg = NULL;
+	struct list_head *prev = NULL;
+	struct list_head *slob_list = NULL;
 	slob_t *b = NULL;
 	unsigned long flags;
-	int tightest_fit;
+	int tightest_fit = -1;
 
 	if (size < SLOB_BREAK1)
 		slob_list = &free_slob_small;
@@ -371,6 +374,7 @@ static void *slob_alloc(size_t size, gfp_t gfp, int align, int node)
 		slob_list = &free_slob_large;
 
 	spin_lock_irqsave(&slob_lock, flags);
+
 	/* Iterate through each partially free page, try to find room */
 	list_for_each_entry(sp, slob_list, lru) {
 #ifdef CONFIG_NUMA
@@ -382,11 +386,8 @@ static void *slob_alloc(size_t size, gfp_t gfp, int align, int node)
 			continue;
 #endif
 		int cur_tightness = slob_best_fit_page_check(sp, size, align);
-		/*if size couldnt fit, move to next page*/
-		if(cur_tightness == -1)
-			continue;
 		/*if perfect fit, then break out. No need to compare more*/
-		else if (cur_tightness == 0){
+		if (cur_tightness == 0){
 			tightest_pg = sp;
 			break;
 		}
@@ -426,6 +427,12 @@ static void *slob_alloc(size_t size, gfp_t gfp, int align, int node)
 		b = slob_page_alloc(sp, size, align);
 		BUG_ON(!b);
 		spin_unlock_irqrestore(&slob_lock, flags);
+
+		/*
+			* For fragmentation metrics
+			* claimed the size
+		*/
+		mem_claimed += size;
 	}
 	if (unlikely((gfp & __GFP_ZERO) && b))
 		memset(b, 0, size);
@@ -451,6 +458,13 @@ static void slob_free(void *block, int size)
 	units = SLOB_UNITS(size);
 
 	spin_lock_irqsave(&slob_lock, flags);
+
+	/*
+		* For fragmentation metrics
+		* minus the claimed size from mem_free
+	*/
+	if(mem_claimed - size >= 0)
+		mem_claimed -= size;
 
 	if (sp->units + units == SLOB_UNITS(PAGE_SIZE)) {
 		/* Go directly to page allocator. Do not pass slob allocator */
@@ -737,4 +751,32 @@ void __init kmem_cache_init(void)
 void __init kmem_cache_init_late(void)
 {
 	slab_state = FULL;
+}
+
+/*
+	* For fragmentation metrics
+	* return the number of bytes claimed
+*/
+asmlinkage unsigned long sys_amt_mem_claimed(void){
+	return mem_claimed;
+}
+/*
+	* For fragmentation metrics
+	* get the number of free spots available in ALL lists
+*/
+asmlinkage unsigned long sys_amt_mem_free(void){
+	struct page* sp = NULL;
+	unsigned long mem_free = 0;
+
+	list_for_each_entry(sp, &free_slob_small, lru) {
+		mem_free += sp->units;
+	}
+	list_for_each_entry(sp, &free_slob_medium, lru) {
+		mem_free += sp->units;
+	}
+	list_for_each_entry(sp, &free_slob_large, lru) {
+		mem_free += sp->units;
+	}
+	/*mem_free holds number of slob units. Turn it into bytes*/
+	return (mem_free * SLOB_UNIT);
 }
