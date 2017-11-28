@@ -249,9 +249,8 @@ static void *slob_page_alloc(struct page *sp, size_t size, int align)
 		}
 
 		/*if this is the last block*/
-		if (slob_last(cur)) {
+		if (slob_last(cur)) 
 			break;
-		}
 	}
 
 	/*Found best-fitted/tightest block. Now, allocate it*/
@@ -297,8 +296,6 @@ static void *slob_page_alloc(struct page *sp, size_t size, int align)
 	}
 	/*couldn't fit size in any block*/
 	return NULL;
-}
-		
 }
 
 /*
@@ -386,7 +383,7 @@ static void *slob_alloc(size_t size, gfp_t gfp, int align, int node)
 		if(cur_tightness == -1)
 			continue;
 		/*if perfect fit, then break out. No need to compare more*/
-		if (cur_tightness == 0){
+		else if (cur_tightness == 0){
 			tightest_pg = sp;
 			break;
 		}
@@ -406,7 +403,6 @@ static void *slob_alloc(size_t size, gfp_t gfp, int align, int node)
 		* Knuth vol 1, sec 2.5, pg 449) */
 	if (prev != slob_list->prev && slob_list->next != prev->next)
 		list_move_tail(slob_list, prev->next);
-	}
 	
 	spin_unlock_irqrestore(&slob_lock, flags);
 
