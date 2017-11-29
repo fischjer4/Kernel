@@ -363,7 +363,7 @@ static void *slob_alloc(size_t size, gfp_t gfp, int align, int node)
 	struct list_head *slob_list = NULL;
 	slob_t *b = NULL;
 	unsigned long flags;
-	int tightest_fit = -1;
+	int tightest_fit = -1, cur_tightness = -1;
 
 	if (size < SLOB_BREAK1)
 		slob_list = &free_slob_small;
@@ -388,7 +388,7 @@ static void *slob_alloc(size_t size, gfp_t gfp, int align, int node)
 		if (sp->units < SLOB_UNITS(size))
 			continue;
 
-		int cur_tightness = slob_best_fit_page_check(sp, size, align);
+		cur_tightness = slob_best_fit_page_check(sp, size, align);
 		/*if it doesn't fit in this page, move to the next page*/
 		if(cur_tightness == -1)
 			continue;
