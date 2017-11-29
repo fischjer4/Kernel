@@ -23,9 +23,9 @@ $(TRG): %.dvi: %.tex $(EXAMPLES)
 	#requires that you \include{pygments.tex} in your preamble
 
 	$(BUILDDIR)/$(LATEX) $<
-	$(BUILDDIR)/$(BIBTEX) $(<:%.tex=%)
-	$(BUILDDIR)/$(LATEX) $<
-	$(BUILDDIR)/$(LATEX) $<
+	#$(BUILDDIR)/$(BIBTEX) $(<:%.tex=%)
+	#$(BUILDDIR)/$(LATEX) $<
+	#$(BUILDDIR)/$(LATEX) $<
 	#remove the pygmentized output to avoid cluttering up the directory
 	#rm __${SRC}.tex
 
