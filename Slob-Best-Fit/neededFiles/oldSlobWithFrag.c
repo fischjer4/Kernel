@@ -314,6 +314,12 @@ static void *slob_alloc(size_t size, gfp_t gfp, int align, int node)
 	}
 	spin_unlock_irqrestore(&slob_lock, flags);
 
+	/*
+		* For fragmentation metrics
+		* claimed the size
+	*/
+	mem_claimed += size;
+
 	/* Not enough space: must allocate a new page */
 	if (!b) {
 		b = slob_new_pages(gfp & ~__GFP_ZERO, 0, node);
@@ -330,13 +336,6 @@ static void *slob_alloc(size_t size, gfp_t gfp, int align, int node)
 		set_slob_page_free(sp, slob_list);
 		b = slob_page_alloc(sp, size, align);
 		BUG_ON(!b);
-
-		/*
-			* For fragmentation metrics
-			* claimed the size
-		*/
-		mem_claimed += size;
-
 		spin_unlock_irqrestore(&slob_lock, flags);
 	}
 	if (unlikely((gfp & __GFP_ZERO) && b))
@@ -672,17 +671,13 @@ asmlinkage long sys_amt_mem_claimed(void){
 asmlinkage long sys_amt_mem_free(void){
 	struct page* sp = NULL;
 	unsigned long mem_free = 0;
-printk("====SLOB UNIT: %ul \n", SLOB_UNIT);
+
 	list_for_each_entry(sp, &free_slob_small, lru) {
 		mem_free += sp->units;
 	}
-printk("====units small: %ul \n", mem_free);
-
 	list_for_each_entry(sp, &free_slob_medium, lru) {
 		mem_free += sp->units;
 	}
-printk("====units after med: %ul \n", mem_free);
-	
 	list_for_each_entry(sp, &free_slob_large, lru) {
 		mem_free += sp->units;
 	}

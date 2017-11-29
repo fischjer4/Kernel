@@ -409,6 +409,11 @@ static void *slob_alloc(size_t size, gfp_t gfp, int align, int node)
 		list_move_tail(slob_list, prev->next);
 	
 	spin_unlock_irqrestore(&slob_lock, flags);
+	/*
+		* For fragmentation metrics
+		* claimed the size
+	*/
+	mem_claimed += size;
 
 	/* Not enough space: must allocate a new page */
 	if (!b) {
@@ -427,12 +432,6 @@ static void *slob_alloc(size_t size, gfp_t gfp, int align, int node)
 		b = slob_page_alloc(sp, size, align);
 		BUG_ON(!b);
 		spin_unlock_irqrestore(&slob_lock, flags);
-
-		/*
-			* For fragmentation metrics
-			* claimed the size
-		*/
-		mem_claimed += size;
 	}
 	if (unlikely((gfp & __GFP_ZERO) && b))
 		memset(b, 0, size);
@@ -778,5 +777,5 @@ asmlinkage long sys_amt_mem_free(void){
 		mem_free += sp->units;
 	}
 	/*mem_free holds number of slob units. Turn it into bytes*/
-	return (mem_free * SLOB_UNIT);
+	return (mem_free * SLOB_UNIT) - SLOB_UNIT + 1;
 }
