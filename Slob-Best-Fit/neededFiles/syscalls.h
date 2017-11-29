@@ -882,7 +882,7 @@ asmlinkage long sys_execveat(int dfd, const char __user *filename,
 			const char __user *const __user *argv,
 			const char __user *const __user *envp, int flags);
 
-asmlinkage unsigned long sys_amt_mem_claimed(void);
-asmlinkage unsigned long sys_amt_mem_free(void);
+asmlinkage long sys_amt_mem_claimed(void);
+asmlinkage long sys_amt_mem_free(void);
 
 #endif
