@@ -672,20 +672,20 @@ asmlinkage long sys_amt_mem_claimed(void){
 asmlinkage long sys_amt_mem_free(void){
 	struct page* sp = NULL;
 	unsigned long mem_free = 0;
-
+printk("====SLOB UNIT: %ul \n", SLOB_UNIT);
 	list_for_each_entry(sp, &free_slob_small, lru) {
 		mem_free += sp->units;
 	}
+printk("====units small: %ul \n", mem_free);
+
 	list_for_each_entry(sp, &free_slob_medium, lru) {
 		mem_free += sp->units;
 	}
+printk("====units after med: %ul \n", mem_free);
+	
 	list_for_each_entry(sp, &free_slob_large, lru) {
 		mem_free += sp->units;
 	}
 	/*mem_free holds number of slob units. Turn it into bytes*/
-	return (mem_free * SLOB_UNIT);
-}
-char* buff  = NULL;
-asmlinkage void sys_slob_alloc(int num_byts){
-	buff = (char*)kmalloc(num_bytes);
+	return (mem_free * SLOB_UNIT) - SLOB_UNIT + 1;
 }

@@ -884,6 +884,5 @@ asmlinkage long sys_execveat(int dfd, const char __user *filename,
 
 asmlinkage unsigned long sys_amt_mem_claimed(void);
 asmlinkage unsigned long sys_amt_mem_free(void);
-asmlinkage void sys_slob_alloc(int);
 
 #endif
