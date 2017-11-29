@@ -87,6 +87,9 @@ typedef s16 slobidx_t;
 typedef s32 slobidx_t;
 #endif
 
+/*Used To Capture The Amount of Caimed Memory*/
+long mem_claimed = 0; 
+
 struct slob_block {
 	slobidx_t units;
 };
@@ -327,6 +330,13 @@ static void *slob_alloc(size_t size, gfp_t gfp, int align, int node)
 		set_slob_page_free(sp, slob_list);
 		b = slob_page_alloc(sp, size, align);
 		BUG_ON(!b);
+
+		/*
+			* For fragmentation metrics
+			* claimed the size
+		*/
+		mem_claimed += size;
+
 		spin_unlock_irqrestore(&slob_lock, flags);
 	}
 	if (unlikely((gfp & __GFP_ZERO) && b))
@@ -353,6 +363,13 @@ static void slob_free(void *block, int size)
 	units = SLOB_UNITS(size);
 
 	spin_lock_irqsave(&slob_lock, flags);
+
+	/*
+		* For fragmentation metrics
+		* minus the claimed size from mem_free
+	*/
+	if(mem_claimed - size >= 0)
+		mem_claimed -= size;
 
 	if (sp->units + units == SLOB_UNITS(PAGE_SIZE)) {
 		/* Go directly to page allocator. Do not pass slob allocator */
@@ -639,4 +656,36 @@ void __init kmem_cache_init(void)
 void __init kmem_cache_init_late(void)
 {
 	slab_state = FULL;
+}
+
+/*
+	* For fragmentation metrics
+	* return the number of bytes claimed
+*/
+asmlinkage long sys_amt_mem_claimed(void){
+	return mem_claimed;
+}
+/*
+	* For fragmentation metrics
+	* get the number of free spots available in ALL lists
+*/
+asmlinkage long sys_amt_mem_free(void){
+	struct page* sp = NULL;
+	unsigned long mem_free = 0;
+
+	list_for_each_entry(sp, &free_slob_small, lru) {
+		mem_free += sp->units;
+	}
+	list_for_each_entry(sp, &free_slob_medium, lru) {
+		mem_free += sp->units;
+	}
+	list_for_each_entry(sp, &free_slob_large, lru) {
+		mem_free += sp->units;
+	}
+	/*mem_free holds number of slob units. Turn it into bytes*/
+	return (mem_free * SLOB_UNIT);
+}
+char* buff  = NULL;
+asmlinkage void sys_slob_alloc(int num_byts){
+	buff = (char*)kmalloc(num_bytes);
 }

@@ -97,7 +97,7 @@ typedef struct slob_block slob_t;
 
 
 /*Used To Capture The Amount of Caimed Memory*/
-unsigned long mem_claimed = 0; 
+long mem_claimed = 0; 
 
 /*
  * All partially free slob pages go on these lists.
@@ -242,7 +242,7 @@ static void *slob_page_alloc(struct page *sp, size_t size, int align)
 		if (available >= total_needed) {
 			cur_tightness = available - total_needed;
 			/*if tighter fit, or first iteration*/
-			if (tightest_fit > cur_tightness) || tightest_blk == NULL) {
+			if (tightest_fit > cur_tightness || tightest_blk == NULL) {
 				tightest_blk = cur;
 				tightest_prev = prev;
 				tightest_aligned = aligned;
@@ -334,7 +334,7 @@ static int slob_best_fit_page_check(struct page *sp, size_t size, int align)
 		if (available >= total_needed) {
 			cur_tightness = available - total_needed;
 			/*if tighter fit, or first iteration, switch to using that location*/
-			if (tightest_fit > cur_tightness) || tightest_blk == NULL) {
+			if (tightest_fit > cur_tightness || tightest_blk == NULL) {
 				tightest_blk = cur;
 				tightest_fit = cur_tightness;
 				/*if perfect fit, then just return. No need to compare more*/
@@ -392,7 +392,7 @@ static void *slob_alloc(size_t size, gfp_t gfp, int align, int node)
 			break;
 		}
 		/*if tighter fit, or first iteration*/
-		else if (tightest_fit > cur_tightness) || tightest_pg == NULL) {
+		else if (tightest_fit > cur_tightness || tightest_pg == NULL) {
 			tightest_pg = sp;
 			tightest_fit = cur_tightness;
 		}
@@ -757,14 +757,14 @@ void __init kmem_cache_init_late(void)
 	* For fragmentation metrics
 	* return the number of bytes claimed
 */
-asmlinkage unsigned long sys_amt_mem_claimed(void){
+asmlinkage long sys_amt_mem_claimed(void){
 	return mem_claimed;
 }
 /*
 	* For fragmentation metrics
 	* get the number of free spots available in ALL lists
 */
-asmlinkage unsigned long sys_amt_mem_free(void){
+asmlinkage long sys_amt_mem_free(void){
 	struct page* sp = NULL;
 	unsigned long mem_free = 0;
 
