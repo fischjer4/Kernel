@@ -38,7 +38,36 @@
 		
 	
 	\section{Version Control Log}
-
+		\begin{center}
+			\begin{longtabu} to \textwidth {|
+					X[4,l]|
+					X[3,c]|
+					X[8,l]|}
+				\hline
+				\textbf{Author} & \textbf{Date} & \textbf{Message} \\ \hline
+	
+				fischjer4 & 2017-11-27 & created Slob-Best-Fit folder \\ \hline
+				fischjer4 & 2017-11-27 & Testing \\ \hline
+				fischjer4 & 2017-11-27 & Added design for the best-fit algorithm to the writeup. Also brought in the newSlob.c which will be incorporating the best-fit algorithm \\ \hline
+				fischjer4 & 2017-11-27 & Added best-fit algorithm. Created a check-page function that makes sure that the size can fit in the pages block after alignment. Edited the slob\_page\_alloc function to mirror the check-page function where it checks all blocks on all pages \\ \hline
+				fischjer4 & 2017-11-28 & added missing brackets \\ \hline
+				fischjer4 & 2017-11-28 & Adde linkage and syscall header files \\ \hline
+				fischjer4 & 2017-11-28 & Added the system calls and the fragmentation tracking \\ \hline
+				fischjer4 & 2017-11-28 & Added fragmentation test \\ \hline
+				fischjer4 & 2017-11-28 & Realized to test slob, kernel space methods need to be used. So, instead there will be 5 iterations where each one makes the system calls \\ \hline
+				fischjer4 & 2017-11-28 & added modified syscall modification files for quick reference \\ \hline
+				fischjer4 & 2017-11-28 & update fragTest. Added syscall to allocate memory via kmalloc. added oldSlobWithFrag.c \\ \hline
+				fischjer4 & 2017-11-28 & changing output of fragtest \\ \hline
+				fischjer4 & 2017-11-28 & Fixed frag test missing percent output. Alos move mem\_claimed in slob.c so it ACTUALLY captures the claimed memory, not just new pages \\ \hline
+				fischjer4 & 2017-11-28 & Changed unsigned long to long in syscall prototype \\ \hline
+				fischjer4 & 2017-11-29 & Removed `optimization' from slob\_alloc that is no longer applicable to the best-fit algorithm \\ \hline
+				fischjer4 & 2017-11-29 & Fixed `ISO forbids declaration and code' warning in slob\_alloc() \\ \hline
+				fischjer4 & 2017-11-29 & Added Writeup \\ \hline
+				fischjer4 & 2017-11-29 & Added Patch file \\ \hline
+				
+			\end{longtabu}
+		\end{center}
+		
 	\section{Work Log}
 		Our Work Log is the same as our Version Control Log above.
 		One can see what was done when, as well as that we followed our design pretty tightly by looking at the commit messages.
