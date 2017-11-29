@@ -333,7 +333,7 @@ static int slob_best_fit_page_check(struct page *sp, size_t size, int align)
 		/*is there enough room*/
 		if (available >= total_needed) {
 			cur_tightness = available - total_needed;
-			/*if tighter fit, or first iteration, switch to using that location*/
+			/*if tighter fit, or first possible, switch to using that location*/
 			if (tightest_fit > cur_tightness || tightest_blk == NULL) {
 				tightest_blk = cur;
 				tightest_fit = cur_tightness;
@@ -360,7 +360,6 @@ static void *slob_alloc(size_t size, gfp_t gfp, int align, int node)
 {
 	struct page *sp = NULL;
 	struct page *tightest_pg = NULL;
-	struct list_head *prev = NULL;
 	struct list_head *slob_list = NULL;
 	slob_t *b = NULL;
 	unsigned long flags;
@@ -385,13 +384,20 @@ static void *slob_alloc(size_t size, gfp_t gfp, int align, int node)
 		if (node != NUMA_NO_NODE && page_to_nid(sp) != node)
 			continue;
 #endif
+		/* Enough room on this page? */
+		if (sp->units < SLOB_UNITS(size))
+			continue;
+
 		int cur_tightness = slob_best_fit_page_check(sp, size, align);
+		/*if it doesn't fit in this page, move to the next page*/
+		if(cur_tightness == -1)
+			continue;
 		/*if perfect fit, then break out. No need to compare more*/
-		if (cur_tightness == 0){
+		else if (cur_tightness == 0){
 			tightest_pg = sp;
 			break;
 		}
-		/*if tighter fit, or first iteration*/
+		/*if tighter fit, or first possible page*/
 		else if (tightest_fit > cur_tightness || tightest_pg == NULL) {
 			tightest_pg = sp;
 			tightest_fit = cur_tightness;
@@ -399,15 +405,10 @@ static void *slob_alloc(size_t size, gfp_t gfp, int align, int node)
 	}
 		
 	/* Attempt to alloc */
-	prev = sp->lru.prev;
-	b = slob_page_alloc(tightest_pg, size, align);
+	if(tightest_pg != NULL){
+		b = slob_page_alloc(tightest_pg, size, align);
+	}
 
-	/* Improve fragment distribution and reduce our average
-		* search time by starting our next search here. (see
-		* Knuth vol 1, sec 2.5, pg 449) */
-	if (prev != slob_list->prev && slob_list->next != prev->next)
-		list_move_tail(slob_list, prev->next);
-	
 	spin_unlock_irqrestore(&slob_lock, flags);
 	/*
 		* For fragmentation metrics
