@@ -14,9 +14,9 @@
 \usepackage{tabu}
 \usepackage{longtable}
 
-\title{\textbf{Operating Systems II}\\Fall 2017\\Homework 3}
+\title{\textbf{Operating Systems II}\\Fall 2017\\Homework 4}
 
-\author{Omeed Habibelahian\\Jeremy Fischer\\Group 17}
+\author{Jeremy Fischer\\Omeed Habibelahian\\Group 17}
 
 \begin{document}
 	\maketitle
@@ -45,24 +45,36 @@
 		
 	\section{Questions}
 		\subsection{Main Point of the Assignment}
-
+			The purpose of this assignment was for students to understand how to modify a component of the Linux Kernel.
+			This assignment also showed students that the Linux kernel is modifiable, so one can change almost any part they want, to meet their needs.
+			In this assignment, the need was to lower memory fragmentation.
+			The second point was to understand how memory management in the Linux kernel works, specifically the SLOB.
+			The third point was to understand how to create and use a system call.
 		\subsection{Our Approach}
-
+			First we looked at the SLOB that was currently being used, to understand how it functions.
+			Once the \textit{slob\_alloc()} function was understood, we proceeded to implement the design listed in the Design section.
+			Once the best-fit algorithm was implemented we needed a way to calcualate the effecieny of the modified SLOB.
+			We added a\textit{ mem\_claimed} vaiable that held the summation of allocation request sizes.
+			Then, in the system call \textit{sys\_amt\_mem\_free} we loop through the three lists of heap pages and record the free units in each one.
+			Now that we had the the amount of memory claimed and the amount of outstanding free memory we were able to compare the two.
+			The fragTest.c program calls the two system calls and calculates a percent (\textit{mem\_free / mem\_claimed}).
+			This same test is applied to the original SLOB and our SLOB for comparison.
 		\subsection{Ensuring Correctness}
-
+			We ensured that our program was correct by
+			\begin{enumerate}
+				\item Placing \textit{printk} statements in the system call functions to ensure that the correct values were being returned
+				\item The kernel booted without error
+				\item The best-fit SLOB was twice as efficient as the first-fit SLOB (which is the desired outcome).
+			\end{enumerate}
+		
 		\subsection{What We Learned}
-			We learned how to\dots 
+			We learned\dots 
 			\begin{itemize}
-				\item use the Linux crypto API
-				
-				\item create a module
-				
-				\item load and unload a module
-				
-				\item create a block device
-				
-				\item mount a drive
+				\item How to modify the memory management sector of the Linux kernel to meet our needs 
+				\item How to create and use system calls
+				\item How the SLOB works
 			\end{itemize}
+		
 		\subsection{How to Evaluate and Prove Correctness}
 			\textbf{Steps to Run with Patch}
 			\begin{enumerate}
@@ -74,31 +86,28 @@
 				
 				\item Apply Patch
 				\begin{enumerate}
-					\item cp ../kernAssn3.patch drivers/block
-				
-					\item cd drivers/block
-				
-					\item patch $<$ kernAssn3.patch
+					\item cd ../
+					\item patch -p0 $<$ slobBestFist.patch
 				\end{enumerate}
-				\item cd ../../
 				
 				\item cp /scratch/files/core-image-lsb-sdk-qemux86.ext4 .
-				
+				\item cd linux-yocto-3.19-patched
 				\item cp /scratch/files/config-3.19.2-yocto-standard .config
-				
 				\item make menuconfig
 				
-				\item Save and Exit
+				\item type / 'press enter'
+				\item type slob 'press enter'
+				\item press 1 'press enter'
+				\item check the box SLOB
+				\item save and exit
 				
 				\item make -j4 all
-				
-				\item cp /scratch/files/core-image-lsb-sdk-qemux86.ext4 ../
 				
 				\item Use the \textit{screen} command to create two split-screens.
 				
 				\item In both screens, make sure to source the environment variable located at /scratch/files.
 				\begin{enumerate}
-					\item{\textbf{Screen 1:}qemu-system-i386 -gdb tcp::5517 -S -nographic -kernel arch/x86/boot/bzImage -drive file=../core-image-lsb-sdk-qemux86.ext4,if=ide -enable-kvm -usb -localtime --no-reboot --append "root=/dev/hda rw console=ttyS0 debug"}
+					\item{\textbf{Screen 1:} qemu-system-i386 -gdb tcp::5517 -S -nographic -kernel arch/x86/boot/bzImage -drive file=../core-image-lsb-sdk-qemux86.ext4,if=ide -enable-kvm -usb -localtime --no-reboot --append "root=/dev/hda rw console=ttyS0 debug"}
 					
 					\item \textbf{Screen 2:} \$GDB
 					
@@ -110,54 +119,13 @@
 					
 					\item The rest of the commands below reside in \textbf{Screen 1:}
 					
-					\item{scp \textbf{username}@os2.engr.oregonstate.edu:\textbf{your dir}/linux-yocto-3.19-patched/drivers/block/block\_dev\_crypto.ko /home/root}
+					\item{scp \textbf{username}@os2.engr.oregonstate.edu:\textbf{your dir}/fragTest.c /home/root}
 					
-					\item{Initialize the module and set the key and kylen: \textit{insmod block\_dev\_crypto.ko key="abcdefghijklmnop" keylen=16}}
+					\item{gcc fragTest.c}
+					\item{./a.out then view output}
 					
-					\item \textit{dmesg} In the output you should see that the module was initialized and the key was set
-					
-					\item \textit{dmesg -c} Clear the kernel 's output clutter
-					
-					\item Partition the disk:\textit{ fdisk /dev/crptblkd0}
-						Follow these instructions when prompted
-						\begin{itemize}
-							\item Command (m for help): \textbf{n}
-					
-							\item Command action  e extended  p primary partition (1-4): \textbf{p}
-					
-							\item Partition number (1-4): \textbf{1}
-					
-							\item First sector(1-1023, default 1): \textbf{1}
-					
-							\item Last sector, +sectors or +size{K,M,G,T,P} (1-1023, default 1023): \textbf{$<$press enter$>$}
-					
-							\item Command (m for help): \textbf{w}
-						\end{itemize}
-					
-					\item Create filesystem: \textit{mkfs.ext2 /dev/crptblkd0p1}
-					
-					\item Mount filesystem: \textit{mount /dev/crptblkd0p1 /mnt}
+					\item reboot (this stops qemu)
 				\end{enumerate}
-				
-				\item Now that the module is loaded and the drive is mounted, we will assert its correctness
-				\begin{itemize}
-					\item \textit{echo AA $>$ /mnt/file1}
-				
-					\item \textit{ls -l /mnt} You should see file1 now
-				
-					\item 
-						\textit{dmesg} It may take a few seconds, but you will see that "Before ENcryption" the data reads 41410000...0000....000. 
-						The output is in hex, and 4141 is AA.
-						in the "After ENcryption" section you can see that the data was encrypted to giberish now
-					
-					\item \textit{cat /mnt/file1} You will see AA as the output
-				\end{itemize}
-				
-				\item Unmount the drive: \textit{umount /mnt}
-				
-				\item Uninstall the module: \textit{rmmod block\_dev\_crypto}
-				
-				\item reboot (this stops qemu)
 			\end{enumerate}
 
 \end{document}
