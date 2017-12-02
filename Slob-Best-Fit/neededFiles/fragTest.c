@@ -8,8 +8,7 @@ int main(){
 	for(i = 0; i < 3; i++){
 		amt_claimed = syscall(360);
 		amt_free= syscall(359);
-		long double total = amt_claimed + amt_free;
-		long double percent = ((long double)amt_claimed / (long double)total) * 100;
+		long double percent = (100 * ((long double)amt_free / (long double)amt_claimed));
 
 		printf("|------------------------------------------\n");
 		printf("| Amount  Claimed: %lu\n", amt_claimed);
