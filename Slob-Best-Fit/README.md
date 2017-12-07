@@ -24,7 +24,7 @@ This was written to compute the effeciency of the first-fit algorithm and best-f
 
 14. *make -j4 all*
 
-15. Use the \textit{screen} command to create two split-screens.
+15. Use the *screen* command to create two split-screens.
 9. Use screen command to create to split screens
 10. In both screen make sure to source the enviornment variable (_environment-setup-i586-poky-linux_)
 	1. __(screen 1)__
