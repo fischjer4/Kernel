@@ -10,7 +10,7 @@ This was written to compute the effeciency of the first-fit algorithm and best-f
 3. *git checkout v3.19.2*
 4. Apply Patch
 	1. *cd ../*
-	2. *patch -p0 $<$ slobBestFit.patch*
+	2. *patch -p0 < slobBestFit.patch*
 5. *cp /scratch/files/core-image-lsb-sdk-qemux86.ext4 .*
 6. *cd linux-yocto-3.19-patched
 7. *cp /scratch/files/config-3.19.2-yocto-standard .config*
